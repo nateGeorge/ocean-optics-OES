@@ -1,11 +1,17 @@
-import subprocess, datetime, re
+import subprocess, datetime, re, sys
 from openpyxl import load_workbook
+sys.path.append('Y:/Nate/git/nuvosun-python-lib')
+import nuvosunlib as nsl
+
+print 'checking schedule file'
+monitorStartFile = 'C:/OESdata/monitorProcessStart.py'
+tool = sys.argv[1]
 
 today = datetime.datetime.now()
     
-schedF = ns.getLatestScheduleFile()
+schedF = nsl.getLatestScheduleFile()
 
-wb = load_workbook(schedF, data_only=True)
+wb = load_workbook(schedF, data_only=True, read_only=True)
 whiteBoardWS = wb.get_sheet_by_name("White Board")
 rowCount = 0
 for row in whiteBoardWS.iter_rows():
@@ -18,22 +24,29 @@ for row in whiteBoardWS.iter_rows():
     elif row[0].value == 'LC1':
         LC1row = rowCount
     rowCount +=1
+if tool == 'MC01':
+    toolRow = MC01row
+elif tool == 'MC02':
+    toolRow = MC02row
 for column in whiteBoardWS.columns:
     try:
         columnDate = column[1].value
         if columnDate.year == today.year and columnDate.month == today.month and columnDate.day == today.day:
-            if column[MC02row].value == None:
-				print 'starting monitor for BE or PC start'
-                subprocess.Popen(['python','Y:/Nate/new MC02 OES program/backup from MC02 computer/monitorProcessStart.pyw','PC+BE'])
-            elif re.search('BE', column[MC02row].value):
-				print 'starting monitor for BE start, run', runNum
-                runNum = re.search('\d\d\d', column[MC02row].value)
-                subprocess.Popen(['python','Y:/Nate/new MC02 OES program/backup from MC02 computer/monitorProcessStart.pyw','BE',runNum])
-            elif re.search('PC', column[MC02row].value):
-				print 'starting monitor for PC start, run', runNum
-                runNum = re.search('\d\d\d', column[MC02row].value)
-                subprocess.Popen(['python','Y:/Nate/new MC02 OES program/backup from MC02 computer/monitorProcessStart.pyw','BE',runNum])
-            elif re.search('PM', column[MC02row].value):
+            print 'matched date in worksheet,', columnDate.year, columnDate.month, columnDate.day
+            print column[toolRow].value
+            if column[toolRow].value == None:
+                print 'starting monitor for BE or PC start'
+                subprocess.Popen(['python',monitorStartFile,'PC+BE'])
+            elif re.search('BE', column[toolRow].value):
+                runNum = re.search('\d\d\d', column[toolRow].value).group(0)
+                print 'starting monitor for BE start, run', runNum
+                subprocess.Popen(['python',monitorStartFile,'BE',runNum])
+            elif re.search('PC', column[toolRow].value):
+                runNum = re.search('\d\d\d', column[toolRow].value).group(0)
+                print 'starting monitor for PC start, run', runNum
+                subprocess.Popen(['python',monitorStartFile,'PC',runNum])
+            elif re.search('PM', column[toolRow].value):
+                print 'found PM, exiting'
                 exit()
     except Exception as e:
         print e

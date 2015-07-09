@@ -71,14 +71,41 @@ ArMinIndex, ArMaxIndex = nsl.get_WL_indices(745.0, 760.0,
 
 def connect_to_multiplexer(comPort):
     #takes com port as a string, e.g. 'COM1'
-    if mpdll.MPM_OpenConnection(comPort) == 1:
+    multiNotConnected = True
+    
+    a = mpdll.MPM_OpenConnection(comPort)
+    b = mpdll.MPM_InitializeDevice()
+    
+    while multiNotConnected:
+        if a == 1 and b == 1:
             print 'connected to multiplexer successfully'
-    else:
-        print 'not able to connect to multiplexer...check to make sure com port is correct'
-        raw_input('press enter to exit')
-        exit()
+            multiNotConnected = False
+        else:
+            print 'unable to connect to multiplexer...check to make sure com port is correct, try unplugging and replugging multiplexer USB cable'
+            raw_input('press enter to exit')
+            exit()
+            
+            #work in progress...popup message to warn operator of what's going on
+            
+            '''
+            fig = plt.figure()
+            plt.axis('off')
+            data = random.random((5,5))
+            try:
+                figManager = plt.get_current_fig_manager()
+                figManager.window.showMaximized()
+            except AttributeError:
+                mng = plt.get_current_fig_manager()
+                mng.window.state('zoomed')
+            ax = fig.add_subplot(111)
+            ax.imshow(data,interpolation='nearest')
+            ax.annotate('not able to connect to multiplexer...check to make sure com port is correct, try unplugging and replugging multiplexer USB cable', xytext = (0,0.5), xy = (0,0.5))
+            fig.show()
+            time.sleep(1)
+            fig.close()
+            '''
 
-    mpdll.MPM_InitializeDevice()
+    
 
     #serialNo = mpdll.MPM_GetSerialNumber() #giving 0 for both multiplexers...not sure if this is correct.  OES multiplexer is COM1
 
@@ -346,6 +373,7 @@ if __name__ == '__main__':
     timeSinceShutOff = 0
     processStarted = False
     shutOffStartTime = 0
+    multiplexerComPort = 'COM5'
     
     mpdll = ctypes.WinDLL(MPMdriverPath + 'MPM2000drv.dll')
     
@@ -353,7 +381,7 @@ if __name__ == '__main__':
     savedir = 'C:/OESdata/' + 'PC ' + savedate + '/'
     
     print '\n connecting to multiplexer... \n'
-    connect_to_multiplexer('COM5') #OES multiplexer is COM5 for now
+    connect_to_multiplexer(multiplexerComPort) #OES multiplexer is COM5 for now
     
     print '\n initializing spectrometer... \n'
     spec,wl,darkInt = connect_to_spectrometer()

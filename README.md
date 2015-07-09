@@ -12,3 +12,8 @@ collection to a down web position.  'raw OES spectrum demo.png' is an example of
   
 'plot all OES data - PC.py' integrates the raw spectra, converts the times of measurement to a downweb position, 
 and saves an image of the plot.  'OES signal demo.png' is an example.
+
+Notes:
+
+automatic restart of USB ports in windows:
+http://digital.ni.com/public.nsf/allkb/1D120A90884C25AF862573A700602459

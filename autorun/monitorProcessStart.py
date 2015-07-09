@@ -19,6 +19,8 @@ import seabreeze.spectrometers as sb
 sys.path.append('Y:/Nate/git/nuvosun-python-lib/')
 import nuvosunlib as nsl
 
+measureOESfile = 'C:/Users/operator/Desktop/measure OES 3.0.py'
+
 processesToMonitor = sys.argv[1]
 runNum = sys.argv[2]
 
@@ -61,6 +63,9 @@ def connect_to_spectrometer(intTime=1000000,darkChannel=6,numberOfScans=15):
     return spec
     
 def check_for_plasma(OESchannel,darkChannel,numberOfScans=15):
+    global arOnCount
+    global arOffCount
+    global spec
     #takes OESchannel as the multiplexer channel that connects to the minichamber to measure a spectrum
     #returns intensity average of 10 scans corrected with dark intensity spectrum
     
@@ -85,22 +90,29 @@ def check_for_plasma(OESchannel,darkChannel,numberOfScans=15):
     
     arLine750 = int1[ArMinIndex:ArMaxIndex]
     arInt = max(arLine750)
-    print 'argon intensity =',arInt
+    print 'monitoring',processesToMonitor,'argon intensity in zone',zone,'=',arInt
     if arInt > 500:
         arOnCount += 1
-        if arOnCount > 11: # if plasma has been on for 3 minutes
+        if arOnCount >= 8: # if plasma has been on for 2 measuring cycles
             if processesToMonitor == 'BE':
-                subprocess.Popen(['python','C:/Users/Desktop/measure BE OES.py',runNum])
+                subprocess.Popen(['python',measureOESfile,runNum,'BE'])
             elif processesToMonitor == 'PC':
-                subprocess.Popen(['python','C:/Users/Desktop/measure PC OES.py',runNum])
+                subprocess.Popen(['python',measureOESfile,runNum,'PC'])
             else:
                 if zone in BEzones:
-                    subprocess.Popen(['python','C:/Users/Desktop/measure BE OES.py',runNum])
+                    subprocess.Popen(['python',measureOESfile,runNum,'BE'])
                 if zone in PCzones:
-                    subprocess.Popen(['python','C:/Users/Desktop/measure PC OES.py',runNum])
+                    subprocess.Popen(['python',measureOESfile,runNum,'PC'])
+            spec.close()
             exit()
     else:
-        arOnCount = 0
+        # sometimes a zone or two can be low in intensity because of broken parts
+        # this will make sure all zones have been off through one measuring cycle before resetting the 
+        # plasma detection timer
+        arOffCount += 1
+        if arOffCount >= 4:
+            arOnCount = 0
+            arOffCount = 0
     
     return datetime.datetime.strftime(datetime.datetime.now(), '%m/%d/%y %H:%M:%S %p'), int1 #datetime string is made to match existing format in datasystem
 
@@ -108,8 +120,12 @@ ArMinIndex, ArMaxIndex = nsl.get_WL_indices(745.0, 760.0,
                                                     nsl.getOOWls())  # gets wl indices for ar peak to detect if plasma is on or not
 connect_to_multiplexer('COM5')
 
+global spec
 spec = connect_to_spectrometer()
+global arOnCount
 arOnCount = 0
+global arOffCount
+arOffCount = 0
 while True:
     for zone in indexToZoneMap.keys():
         check_for_plasma(indexToZoneMap[zone], darkChannel = 6)
