@@ -38,7 +38,11 @@ for count in range(len(PCOESandXRFdata['DW'])):
 #print sorted(PCOESandXRFdataSubs.keys())
 #print PCOESandXRFdataSubs['332'].keys()
 OESpcDataConcatWithEff = {}
-effDataSubs = nsl.effData_by_substrate()
+
+
+effDataSubs = nsl.effData_by_substrate(nsl.import_eff_file(substrateRange = [330,500]))
+
+
 #print sorted(effDataSubs.keys())
 for run in sorted(PCOESandXRFdataSubs.keys()):
     print 'interpolating', run
