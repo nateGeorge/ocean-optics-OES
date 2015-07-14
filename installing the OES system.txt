@@ -1,82 +1,49 @@
 installing oceanoptics usb2000+ on a computer:
 
-short version:
+A: installing spectrometer software:
+1. Install omnidriver + spam (Y:\Nate\Wayne\Ocean Optics OMNI\100115_1003) using password: Etm4QBn7gd
+2. Plug in spectrometer, make sure it installs correctly (should see ocean optics spectrometer in the device manager)
+3. Install seabreeze http://oceanoptics.com/product/seabreeze/ ***make sure x64 or 32 is correct version
+4. Install lib-usbwin32:
+     http://sourceforge.net/projects/libusb-win32/files/libusb-win32-releases/1.2.6.0/
+5. Then run inf-wizard.exe, create a .inf for the spectrometer and install it.
+6. Run install-filter-win.exe (in libusb-win32-bin-1.2.6.0\bin\x86 or libusb-win32-bin-1.2.6.0\bin\amd64, if the computer is 32 or 64 bit, respectively)
+7. Unplug the spectrometer and plug it back in.
 
-install omnidriver + spam (Y:\Nate\Wayne\Ocean Optics OMNI\100115_1003) using password: Etm4QBn7gd
-plug in spectrometer, make sure it installs correctly
 
-
+B: installing python and the code to take the measurements:
+1. Download and install pythonxy (https://code.google.com/p/pythonxy/)
+2. Open a command prompt (start-> type "cmd")
+type the following commands to install python packages:
 easy_install easygui
-easy_install ctypes
-easy_install cython
-pyro
-py4j
-
-
-if can't get to run with cython
 easy_install pyusb
-install seabreeze http://oceanoptics.com/product/seabreeze/ ***make sure x64 or 32 is correct version
-after plugging in spectrometer, you may need to right click the device in device manager, choose 'update driver', and find the ocean optics folder in program files.
-install lib-usbwin32
-http://sourceforge.net/projects/libusb-win32/files/libusb-win32-releases/1.2.6.0/
-then when the spectrometer is installed (need to choose oceanoptics folder in program files for device driver), install a filter using lib-usbwin32
-Y:\Nate\new MC02 OES program\libusb-win32-bin-1.2.6.0\bin\amd64
-probably also need to use inf-wizard to install driver
-may need to copy .dll and .sys files to windows/system32 by hand if getting no backend available error
+easy_install ctypes
+easy_install cython (don't think you actually need this one, you can try skipping it)
 
+3. Download the installer for python-seabreeze from 
+https://github.com/ap--/python-seabreeze/releases
+Make sure you download the release for the correct version of python (i.e. cp27 is for python 2.7) and processor architecture.
 
 install python-seabreeze to interface with USB2000+ and python:
 in cmd console:
 
 pip install xxxxx.whl
 
-from here:
-https://github.com/ap--/python-seabreeze/releases
+C: Final steps
+1. type 'python Y:/Nate/OES/installOESsoftware.py' or double click that file, it will copy all of the required files to the hard drive.
+2. change the name of the 'MC0X' to reflect the name of the current tool.
+3. Set up a task in windows task scheduler to run the file 'C:/OESdata/auto backup files, read schedule and start measurements.py' every day at 5 am.
+This will back up the data on the shared drive, check the schedule to see if any runs are happening today, and monitor 
+the process and automatically collect data when the process starts.
 
+ 
 
+notes:
+after plugging in spectrometer, you may need to right click the device in device manager, choose 'update driver', and find the ocean optics folder in program files.
 
+if having problems with python compiling, here is a fix to try:
 
-
-
-
-
-
-extra details::
-
-install omnidriver + spam (Y:\Nate\Wayne\Ocean Optics OMNI\100115_1003) using password: Etm4QBn7gd
-install seabreeze http://oceanoptics.com/product/seabreeze/ ***make sure x64 or 32 is correct version
-plug in spectrometer, make sure it installs correctly (may have to click 'uninstall' after finding the unknown usb device in device manager, then try re-plugging in spectrometer
-
-
-
-install lib-usbwin32
-http://sourceforge.net/projects/libusb-win32/files/libusb-win32-releases/1.2.6.0/
-(then use inf-wizard to install driver for spectrometer if can't get it to work otherwise, Y:\Nate\new MC02 OES program\libusb-win32-bin-1.2.6.0\bin)
-then when the spectrometer is installed, install a filter using lib-usbwin32
-Y:\Nate\new MC02 OES program\libusb-win32-bin-1.2.6.0\bin\amd64
-
-install pythonxy (https://code.google.com/p/pythonxy/)
-
-in cmd console:
-
-easy_install py_usb
-easy_install ctypes (need to do visualstudio fix to install it, not sure if this is even needed)
-
-install python-seabreeze to interface with USB2000+ and python: (install version 0.4.0 if newest doesn't work and gives NotImplementedError)
-in cmd console:
-
-pip install xxxxx.whl
-
-from here:
-https://github.com/ap--/python-seabreeze/releases (match 32 or 64 bit to python version, which is probably 32, also be sure to match the python version , eg 2.7 or 3.3 etc, to the 'cp27' part the while file)
-
-or
-
-	download and install visual studio (https://www.visualstudio.com/en-us/products/free-developer-offers-vs.aspx)
+download and install visual studio (https://www.visualstudio.com/en-us/products/free-developer-offers-vs.aspx)
 	install python seabreeze package: download from https://github.com/ap--/python-seabreeze
 	then fix vcvarsall.bat problem as explained here: http://stackoverflow.com/questions/2817869/error-unable-to-find-vcvarsall-bat
 	(SET VS90COMNTOOLS=%VS120COMNTOOLS% for VisualStudio 2013)
-	then run python setup.py install
-	(haven't gotten this to work and visualstudio takes forever to install)
-
-

@@ -15,7 +15,7 @@ import numpy as np
 import matplotlib.animation as animation
 import easygui as eg
 
-multiplexComPort = 14
+multiplexComPort = 15
 multiNotConnected = True
 
 matplotlib.rcParams.update({'font.size': 40})
@@ -31,8 +31,9 @@ b = mpdll.MPM_InitializeDevice()
 print b
 
 while multiNotConnected:
-    if a == 1 or b == 1:
+    if a != 1 or b != 1:
         openDebug = eg.msgbox('Cannot connect to multiplexer (try unplugging the usb cable and plugging the multiplexer usb cable back in).  Multiplexer is set as COM' + str(multiplexComPort) + '.')
+        exit()
     else:
         print 'successfully connected to multiplexer'
         multiNotConnected = False
