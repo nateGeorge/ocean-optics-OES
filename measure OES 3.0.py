@@ -35,7 +35,8 @@ import matplotlib.dates as mdates
 sys.path.append("Y:/Nate/git/nuvosun-python-lib/")
 import nuvosunlib as nsl
 
-plotOESfile = 'C:/Users/operator/Desktop/plot OES 3.1.py'
+plotOESfile = 'C:/OESdata/plot OES 3.1.py'
+autoBackupfile = 'C:/OESdata/auto backup files, read schedule and start measurements.py'
 MPMdriverPath = 'Y:/Nate/Wayne/'
 
 try:
@@ -58,8 +59,12 @@ except:
 
 if process == 'BE':
     zoneList = ['1B','2B','3B','4B']
+    procIntTime = 1000000 # use 1 s integration time for BE, otherwise it saturates
+    procNumScans = 21
 elif process == 'PC':
     zoneList = ['5A','5B','6A','6B']
+    procIntTime = 3000000 # use 3 s integration time for PC, otherwise it saturates
+    procNumScans = 7
 else:
     eg.msgbox(msg='You must choose either BE or PC. Try running the program again.')
     
@@ -112,7 +117,7 @@ def connect_to_multiplexer(comPort):
     
 
 
-def connect_to_spectrometer(intTime=4500000,darkChannel=6,numberOfScans=6):
+def connect_to_spectrometer(intTime=procIntTime,darkChannel=6,numberOfScans=procNumScans):
     #connects to first connected spectrometer it finds, takes intTime as integration time in nanoseconds, darkChannel as 
     #multiplexer channel that is blocked from all light
     #default int time is 1s, channel6 on the multiplexer is blocked off on MC02
@@ -331,6 +336,7 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                                 # close plotting process if it is open
                                 if subprocess.Popen.poll(plottingProc) == None:
                                     subprocess.Popen.terminate(plottingProc)
+                                subprocess.Popen(['python',autoBackupfile,'False'])
                                 raw_input('press enter to exit')
                                 exit()
                         

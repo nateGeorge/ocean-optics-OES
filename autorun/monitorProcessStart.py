@@ -19,7 +19,7 @@ import seabreeze.spectrometers as sb
 sys.path.append('Y:/Nate/git/nuvosun-python-lib/')
 import nuvosunlib as nsl
 
-measureOESfile = 'C:/Users/operator/Desktop/measure OES 3.0.py'
+measureOESfile = 'C:/OESdata/measure OES 3.0.py'
 
 processesToMonitor = sys.argv[1]
 runNum = sys.argv[2]
