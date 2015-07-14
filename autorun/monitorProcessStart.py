@@ -22,7 +22,9 @@ import nuvosunlib as nsl
 measureOESfile = 'C:/OESdata/measure OES 3.0.py'
 
 processesToMonitor = sys.argv[1]
-runNum = sys.argv[2]
+tool = sys.argv[2]
+runNum = sys.argv[3]
+
 
 BEzones = ['1B','2B','3B','4B']
 PCzones = ['5A','5B','6A','6B']
@@ -96,14 +98,14 @@ def check_for_plasma(OESchannel,darkChannel,numberOfScans=15):
         arOffCount = 0
         if arOnCount >= 8: # if plasma has been on for 2 measuring cycles
             if processesToMonitor == 'BE':
-                subprocess.Popen(['python',measureOESfile,runNum,'BE'])
+                subprocess.Popen(['python',measureOESfile,runNum,'BE',tool])
             elif processesToMonitor == 'PC':
-                subprocess.Popen(['python',measureOESfile,runNum,'PC'])
+                subprocess.Popen(['python',measureOESfile,runNum,'PC',tool])
             else:
                 if zone in BEzones:
-                    subprocess.Popen(['python',measureOESfile,runNum,'BE'])
+                    subprocess.Popen(['python',measureOESfile,runNum,'BE',tool])
                 if zone in PCzones:
-                    subprocess.Popen(['python',measureOESfile,runNum,'PC'])
+                    subprocess.Popen(['python',measureOESfile,runNum,'PC',tool])
             spec.close()
             exit()
     else:

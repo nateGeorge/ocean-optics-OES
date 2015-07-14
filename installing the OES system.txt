@@ -18,6 +18,8 @@ type the following commands to install python packages:
 easy_install easygui
 easy_install pyusb
 easy_install ctypes
+easy_install openpyxl
+
 easy_install cython (don't think you actually need this one, you can try skipping it)
 
 3. Download the installer for python-seabreeze from 

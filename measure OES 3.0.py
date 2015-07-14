@@ -63,6 +63,14 @@ except:
         print 'using',runNum,'as run number'
     except:
         runNum = None
+        
+try:
+    tool = sys.argv[3]
+except:
+    files = os.listdir('C:/OESdata')
+    for file in files:
+        if re.search('MC\d\d.txt',file):
+            tool = file[:4]
 
 if process == 'BE':
     zoneList = BEzoneList
@@ -389,7 +397,10 @@ if __name__ == '__main__':
     mpdll = ctypes.WinDLL(MPMdriverPath + 'MPM2000drv.dll')
     
     savedate = datetime.strftime(datetime.now(),'%m-%d-%y') #made DT format similar to data system format
-    savedir = 'C:/OESdata/' + process + ' ' + savedate + '/'
+    if runNum != None:
+        savedir = 'C:/OESdata/' + process + ' ' + savedate + ' ' + tool + ' ' + runNum '/'
+    else:
+        savedir = 'C:/OESdata/' + process + ' ' + savedate + ' ' + tool + '/'
     
     print '\n connecting to multiplexer... \n'
     connect_to_multiplexer(multiplexerComPort) #OES multiplexer is COM5 for now

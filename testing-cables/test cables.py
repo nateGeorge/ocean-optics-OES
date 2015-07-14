@@ -40,7 +40,7 @@ while multiNotConnected:
 # if need to select between multiple multiplexers, use this line:
 # serialNo = mpdll.MPM_GetSerialNumber() #giving 0 for both multiplexers...not sure if this is correct.  OES multiplexer is COM1
 
-mpdll.MPM_SetChannel(14)
+mpdll.MPM_SetChannel(2)
 
 #connects to first connected spectrometer it finds, takes intTime as integration time in nanoseconds, darkChannel as 
 #multiplexer channel that is blocked from all light

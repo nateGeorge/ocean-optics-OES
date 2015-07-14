@@ -36,15 +36,15 @@ for column in whiteBoardWS.columns:
             print column[toolRow].value
             if column[toolRow].value == None:
                 print 'starting monitor for BE or PC start'
-                subprocess.Popen(['python',monitorStartFile,'PC+BE'])
-            elif re.search('BE', column[toolRow].value):
+                subprocess.Popen(['python',monitorStartFile,'PC+BE',tool])
+            elif re.search('BE', column[toolRow].value) and not re.search('PM', column[toolRow].value):
                 runNum = re.search('\d\d\d', column[toolRow].value).group(0)
                 print 'starting monitor for BE start, run', runNum
-                subprocess.Popen(['python',monitorStartFile,'BE',runNum])
-            elif re.search('PC', column[toolRow].value):
+                subprocess.Popen(['python',monitorStartFile,'BE',tool,runNum])
+            elif re.search('PC', column[toolRow].value) and not re.search('PM', column[toolRow].value):
                 runNum = re.search('\d\d\d', column[toolRow].value).group(0)
                 print 'starting monitor for PC start, run', runNum
-                subprocess.Popen(['python',monitorStartFile,'PC',runNum])
+                subprocess.Popen(['python',monitorStartFile,'PC',tool,runNum])
             elif re.search('PM', column[toolRow].value):
                 print 'found PM, exiting'
                 exit()
