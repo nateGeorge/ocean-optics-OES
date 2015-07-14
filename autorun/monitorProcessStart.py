@@ -93,6 +93,7 @@ def check_for_plasma(OESchannel,darkChannel,numberOfScans=15):
     print 'monitoring',processesToMonitor,'argon intensity in zone',zone,'=',arInt
     if arInt > 500:
         arOnCount += 1
+        arOffCount = 0
         if arOnCount >= 8: # if plasma has been on for 2 measuring cycles
             if processesToMonitor == 'BE':
                 subprocess.Popen(['python',measureOESfile,runNum,'BE'])

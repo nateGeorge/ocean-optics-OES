@@ -378,7 +378,7 @@ if __name__ == '__main__':
     mpdll = ctypes.WinDLL(MPMdriverPath + 'MPM2000drv.dll')
     
     savedate = datetime.strftime(datetime.now(),'%m-%d-%y') #made DT format similar to data system format
-    savedir = 'C:/OESdata/' + 'PC ' + savedate + '/'
+    savedir = 'C:/OESdata/' + process + ' ' + savedate + '/'
     
     print '\n connecting to multiplexer... \n'
     connect_to_multiplexer(multiplexerComPort) #OES multiplexer is COM5 for now

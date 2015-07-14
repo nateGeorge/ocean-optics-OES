@@ -60,7 +60,7 @@ if not todaysRun:
             elif re.search('PC',savedir):
                 process = 'PC'
             else:
-                BEproc = eg.ynbox(msg='Which process is running?', title='choose process', choices=('BE','PC'))
+                BEproc = eg.ynbox(msg='Which process is this?', title='choose process', choices=('BE','PC'))
                 if BEproc:
                     process = 'BE'
                 elif not BEproc:
@@ -168,7 +168,7 @@ def plotdata(*args):
             if process == 'PC':
                 elementsToPlot = {'H-656/Fi' : elementDict['H-656']['color'], 'Cu-325-327/Fi' : elementDict['Cu-325-327']['color'], 'In-451/Fi' : elementDict['In-451']['color'], 'Ga-417/Fi' : elementDict['Ga-417']['color'], 'Na-589/Fi' : elementDict['Na-589']['color']}
             elif process == 'BE':
-                elementsToPlot = {'Cu-325-327/Fi' : elementDict['Cu-325-327']['color'], 'In-451/Fi' : elementDict['In-451']['color'], 'Ga-417/Fi' : elementDict['Ga-417']['color'], 'Na-589/Fi' : elementDict['Na-589']['color']}
+                elementsToPlot = {'Mo-380/Fi' : elementDict['Mo-380']['color'], 'Ti-496-522/Fi' : elementDict['Ti-496-522']['color'], 'H-656/Fi' : elementDict['H-656']['color'], 'Na-589/Fi' : elementDict['Na-589']['color']}
         else:
             if process == 'PC':
                 elementsToPlot = {'Ar' : '#b2b2b2', 'Cu' : '#FFCC00', 'In': '#0099ff', 'Na' : '#009933', 'Ga' : '#ff5c33'} # dict of elements and colors for plotting
