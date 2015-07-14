@@ -39,6 +39,13 @@ plotOESfile = 'C:/OESdata/plot OES 3.1.py'
 autoBackupfile = 'C:/OESdata/auto backup files, read schedule and start measurements.py'
 MPMdriverPath = 'Y:/Nate/Wayne/'
 
+files = os.listdir('C:/OESdata')
+for file in files:
+    if re.search('MC\d\d.txt',file):
+        tool = file[:4]
+
+BEzoneList, PCzoneList, zoneToIndexMap = nsl.load_OES_config(tool)
+
 try:
     runNum = sys.argv[1]
     process = sys.argv[2]
@@ -58,17 +65,15 @@ except:
         runNum = None
 
 if process == 'BE':
-    zoneList = ['1B','2B','3B','4B']
+    zoneList = BEzoneList
     procIntTime = 1000000 # use 1 s integration time for BE, otherwise it saturates
     procNumScans = 21
 elif process == 'PC':
-    zoneList = ['5A','5B','6A','6B']
+    zoneList = PCzoneList
     procIntTime = 3000000 # use 3 s integration time for PC, otherwise it saturates
     procNumScans = 7
 else:
     eg.msgbox(msg='You must choose either BE or PC. Try running the program again.')
-    
-zoneToIndexMap = {'1B':1, '2B':2, '3B':15, '4B':16, '5A':11, '5B':12, '6A':13, '6B':14}
     
 ArMinIndex, ArMaxIndex = nsl.get_WL_indices(745.0, 760.0,
                                                     nsl.getOOWls())  # gets wl indices for ar peak to detect if plasma is on or not
