@@ -44,7 +44,7 @@ for file in files:
     if re.search('MC\d\d.txt',file):
         tool = file[:4]
 
-BEzoneList, PCzoneList, zoneToIndexMap = nsl.load_OES_config(tool)
+BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort = nsl.load_OES_config(tool)
 
 try:
     runNum = sys.argv[1]
@@ -392,7 +392,7 @@ if __name__ == '__main__':
     timeSinceShutOff = 0
     processStarted = False
     shutOffStartTime = 0
-    multiplexerComPort = 'COM5'
+    multiplexerComPort = MPcomPort
     
     mpdll = ctypes.WinDLL(MPMdriverPath + 'MPM2000drv.dll')
     

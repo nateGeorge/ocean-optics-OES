@@ -37,6 +37,7 @@ C: Final steps
 3. Set up a task in windows task scheduler to run the file 'C:/OESdata/auto backup files, read schedule and start measurements.py' every day at 5 am.
 This will back up the data on the shared drive, check the schedule to see if any runs are happening today, and monitor 
 the process and automatically collect data when the process starts.
+4. Edit the excel Y:/Nate/OES/OES configuration.xlsx; add a new tab with the tool name as the tab name, and add the configuration, copying from another tool tab.
 
  
 

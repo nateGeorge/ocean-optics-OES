@@ -21,6 +21,8 @@ import nuvosunlib as nsl
 
 measureOESfile = 'C:/OESdata/measure OES 3.0.py'
 
+BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort = nsl.load_OES_config(tool)
+
 processesToMonitor = sys.argv[1]
 tool = sys.argv[2]
 runNum = sys.argv[3]
@@ -30,11 +32,11 @@ BEzones = ['1B','2B','3B','4B']
 PCzones = ['5A','5B','6A','6B']
 
 if processesToMonitor == 'BE':
-    indexToZoneMap = {'1B':1, '2B':2, '3B':15, '4B':16}
+    zoneList = BEzoneList
 elif processesToMonitor == 'PC':
-    indexToZoneMap = {'5A':11, '5B':12, '6A':13, '6B':14}
+    zoneList = PCzoneList
 elif processesToMonitor == 'BE+PC':
-    indexToZoneMap = {'1B':1, '2B':2, '3B':15, '4B':16, '5A':11, '5B':12, '6A':13, '6B':14}
+    zoneList = BEzoneList + PCzoneList
 
 MPMdriverPath = 'Y:/Nate/Wayne/'
 mpdll = ctypes.WinDLL(MPMdriverPath + 'MPM2000drv.dll')
@@ -121,6 +123,7 @@ def check_for_plasma(OESchannel,darkChannel,numberOfScans=15):
 
 ArMinIndex, ArMaxIndex = nsl.get_WL_indices(745.0, 760.0,
                                                     nsl.getOOWls())  # gets wl indices for ar peak to detect if plasma is on or not
+
 connect_to_multiplexer('COM5')
 
 global spec
@@ -130,5 +133,5 @@ arOnCount = 0
 global arOffCount
 arOffCount = 0
 while True:
-    for zone in indexToZoneMap.keys():
-        check_for_plasma(indexToZoneMap[zone], darkChannel = 6)
+    for zone in zoneList:
+        check_for_plasma(zoneToIndexMap[zone], darkChannel = 6)
