@@ -71,14 +71,14 @@ else:
 def handle_close(evt):
     if runNum != None:
         basepath = 'Y:\\Experiment Summaries\\Year ' + str(datetime.now().year)
-        runPath = basepath + '\\' + 'S00' + str(runNum) + '\\'
+        runPath = basepath + '\\' + 'S' + str(runNum).zfill(5) + '\\'
         print runPath
         if os.path.exists(runPath):
             print 'found place to save it', runPath
             saveFile2 = runPath + '\\' + str(runNum) + ' ' + process + ' OES.png'
         else:
             print 'didn\'t find place to save. creating directory'
-            runPath = basepath + '\\' + 'S00' + str(runNum) + '\\'
+            runPath = basepath + '\\' + 'S' + str(runNum).zfill(5) + '\\'
             os.mkdir(runPath)
             saveFile2 = runPath + '\\' + str(runNum) + ' ' + process + ' OES.png'
         print 'saving at', saveFile2
