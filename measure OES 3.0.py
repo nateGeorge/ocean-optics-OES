@@ -398,7 +398,7 @@ if __name__ == '__main__':
     
     savedate = datetime.strftime(datetime.now(),'%m-%d-%y') #made DT format similar to data system format
     if runNum != None:
-        savedir = 'C:/OESdata/' + process + ' ' + savedate + ' ' + tool + ' ' + runNum + '/'
+        savedir = 'C:/OESdata/' + process + ' ' + savedate + ' ' + tool + ' ' + runNum.zfill(5) + '/'
     else:
         savedir = 'C:/OESdata/' + process + ' ' + savedate + ' ' + tool + '/'
     

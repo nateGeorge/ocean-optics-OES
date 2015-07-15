@@ -21,12 +21,11 @@ import nuvosunlib as nsl
 
 measureOESfile = 'C:/OESdata/measure OES 3.0.py'
 
-BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort = nsl.load_OES_config(tool)
-
 processesToMonitor = sys.argv[1]
 tool = sys.argv[2]
 runNum = sys.argv[3]
 
+BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort = nsl.load_OES_config(tool)
 
 BEzones = ['1B','2B','3B','4B']
 PCzones = ['5A','5B','6A','6B']
