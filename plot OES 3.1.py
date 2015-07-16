@@ -16,6 +16,13 @@ global process
 global dataFile
 global elementDict
 
+files = os.listdir('C:/OESdata')
+for file in files:
+    if re.search('MC\d\d.txt',file):
+        tool = file[:4]
+
+BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort = nsl.load_OES_config(tool)
+
 try:
     todaysRun = sys.argv[1]
     runNum = sys.argv[2]
@@ -95,9 +102,9 @@ def create_oesdict():
     #make list of elements and zones measured
     global zoneList
     if process == 'BE':
-        zoneList = ['1B','2B','3B','4B']
+        zoneList = BEzoneList
     elif process == 'PC':
-        zoneList = ['5A','5B','6A','6B']
+        zoneList = PCzoneList
     if datetime.strptime(savedate,'%m-%d-%y') >= datetime(2015,7,1): # changed to new data storage format on July 1st, 2015
         global elementDict
         elementDict, normalizationKeys = nsl.OESparameters(True)
