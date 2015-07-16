@@ -155,9 +155,9 @@ def connect_to_spectrometer(intTime=procIntTime,darkChannel=6,numberOfScans=proc
     time.sleep(1) # have to wait at least 0.5s for multiplexer to switch
     
     #averages 15 measurements for the dark backround spectrum
-    darkInt = spec.intensities()
+    darkInt = spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
     for each in range(numberOfScans - 1):
-        darkInt += spec.intensities()
+        darkInt += spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
     darkInt = darkInt/float(numberOfScans)
     wl = spec.wavelengths()
     # write darkInt to file in case its needed
@@ -201,9 +201,9 @@ def measure_OES_spectrum(OESchannel,darkInt,numberOfScans=3):
     mpdll.MPM_SetChannel(OESchannel)
     time.sleep(1) #need to wait at least 0.5s for multiplexer to switch inputs
     #take average of 15 measurements
-    int1 = spec.intensities()
+    int1 = spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
     for each in range(numberOfScans - 1):
-        int1 += spec.intensities()
+        int1 += spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
     int1 = int1/float(numberOfScans)
     int1 -= darkInt 
     
@@ -291,9 +291,9 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
     time.sleep(1) # have to wait at least 0.5s for multiplexer to switch
     
     #averages 15 measurements for the dark background spectrum
-    darkInt = spec.intensities()
+    darkInt = spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
     for each in range(numberOfScans - 1):
-        darkInt += spec.intensities()
+        darkInt += spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
     darkInt = darkInt/float(numberOfScans)
     # write darkInt to file in case something is screwed up
     notWritten = True

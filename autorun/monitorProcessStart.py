@@ -76,18 +76,18 @@ def check_for_plasma(OESchannel,darkChannel,numberOfScans=15):
     time.sleep(1) # have to wait at least 0.5s for multiplexer to switch
     
     #averages 15 measurements for the dark background spectrum
-    darkInt = spec.intensities()
+    darkInt = spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
     for each in range(numberOfScans-1):
-        darkInt += spec.intensities()
+        darkInt += spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
     darkInt = darkInt/float(numberOfScans)
     wl = spec.wavelengths()
     
     mpdll.MPM_SetChannel(OESchannel)
     time.sleep(1) #need to wait at least 0.5s for multiplexer to switch inputs
     #take average of 15 measurements
-    int1 = spec.intensities()
+    int1 = spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
     for each in range(numberOfScans - 1):
-        int1 += spec.intensities()
+        int1 += spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
     int1 = int1/float(numberOfScans)
     int1 -= darkInt
     

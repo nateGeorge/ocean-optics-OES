@@ -71,7 +71,7 @@ def plotdata(*args):
     zone = zoneList[zoneCount]
     mpdll.MPM_SetChannel(zoneToIndexMap[zone])
     time.sleep(0.5)
-    int1 = spec.intensities()
+    int1 = spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
     wl = spec.wavelengths()
     ax = plt.subplot(1,1,1)
     xLimMin = 200
