@@ -100,6 +100,7 @@ def connect_to_multiplexer(comPort):
             multiNotConnected = False
         else:
             print 'unable to connect to multiplexer...check to make sure com port is correct, try unplugging and replugging multiplexer USB cable'
+            eg.msgbox('unable to connect to multiplexer...check to make sure com port is correct, try unplugging and replugging multiplexer USB cable. Com port set as ' + MPcomPort)
             raw_input('press enter to exit')
             exit()
             

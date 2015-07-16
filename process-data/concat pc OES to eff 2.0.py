@@ -23,7 +23,7 @@ PCOEScsvWithDWreader = csv.DictReader(open(processedPCfile[:-4] + ' and XRF.csv'
 for row in PCOEScsvWithDWreader:
     for key, value in row.iteritems():
         PCOESandXRFdata.setdefault(key,[]).append(value)
-     
+
 charKeys = ['substrate', 'zone', 'process', 'tool', 'datetime']
 
 for count in range(len(PCOESandXRFdata['DW'])):
@@ -65,7 +65,7 @@ with open(effFile,'wb') as csvfile:
     for run in sorted(OESpcDataConcatWithEff.keys()):
         for zone in sorted(OESpcDataConcatWithEff[run].keys()):
             try:
-                for count in range(len(OESpcDataConcatWithEff[run][zone]['DW'])):
+                for count in range(len(OESpcDataConcatWithEff[run][zone]['H-656'])):
                     csvWriter.writerow([run,zone] + [OESpcDataConcatWithEff[run][zone][key][count] for key in oesxrfeffKeys] + [effDataSubs[int(run)][key][count] for key in effKeys])
             except Exception as e:
-                print tb.print_tb(sys.exc_info()[2])
+                sys.exc_info()
