@@ -75,11 +75,11 @@ except:
 if process == 'BE':
     zoneList = BEzoneList
     procIntTime = 1000000 # use 1 s integration time for BE, otherwise it saturates
-    procNumScans = 21
+    procNumScans = 20
 elif process == 'PC':
     zoneList = PCzoneList
-    procIntTime = 3000000 # use 3 s integration time for PC, otherwise it saturates
-    procNumScans = 7
+    procIntTime = 3000000 # use 3 s integration time for PC, otherwise it saturates Z6
+    procNumScans = 20
 else:
     eg.msgbox(msg='You must choose either BE or PC. Try running the program again.')
     
@@ -154,9 +154,9 @@ def connect_to_spectrometer(intTime=procIntTime,darkChannel=6,numberOfScans=proc
     mpdll.MPM_SetChannel(darkChannel)
     time.sleep(1) # have to wait at least 0.5s for multiplexer to switch
     
-    #averages 15 measurements for the dark backround spectrum
+    #averages 40 measurements for the dark background spectrum
     darkInt = spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
-    for each in range(numberOfScans - 1):
+    for each in range(numberOfScans*2 - 1):
         darkInt += spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
     darkInt = darkInt/float(numberOfScans)
     wl = spec.wavelengths()
@@ -194,7 +194,7 @@ def connect_to_spectrometer(intTime=procIntTime,darkChannel=6,numberOfScans=proc
     return spec, spec.wavelengths(), darkInt
 
 
-def measure_OES_spectrum(OESchannel,darkInt,numberOfScans=3):
+def measure_OES_spectrum(OESchannel,darkInt,numberOfScans=procNumScans):
     #takes OESchannel as the multiplexer channel that connects to the minichamber to measure a spectrum
     #returns intensity average of 10 scans corrected with dark intensity spectrum
     
@@ -281,7 +281,7 @@ def prepare_for_OES_measurements(savedir, savedate):
     return zoneList, measuredElementList, OESmaxMins, OESdataDict
 
         
-def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir, savedate, OESdataDict, darkChannel, processStarted, numberOfScans = 6):
+def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir, savedate, OESdataDict, darkInt, processStarted, numberOfScans = procNumScans):
     global shutOffStartTime
     global shutOffTimerStarted
     global timeSinceShutOff
@@ -290,11 +290,6 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
     mpdll.MPM_SetChannel(darkChannel)
     time.sleep(1) # have to wait at least 0.5s for multiplexer to switch
     
-    #averages 15 measurements for the dark background spectrum
-    darkInt = spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
-    for each in range(numberOfScans - 1):
-        darkInt += spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
-    darkInt = darkInt/float(numberOfScans)
     # write darkInt to file in case something is screwed up
     notWritten = True
     while notWritten:
@@ -351,6 +346,7 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                                 if subprocess.Popen.poll(plottingProc) == None:
                                     subprocess.Popen.terminate(plottingProc)
                                 subprocess.Popen(['python',autoBackupfile,'False'])
+                                mpdll.MPM_CloseConnection()
                                 raw_input('press enter to exit')
                                 exit()
                         
@@ -415,12 +411,10 @@ if __name__ == '__main__':
     plotCounter = 0
     while True:
         print '\n collecting spectra for zones ' + ', '.join(zoneList) + '... \n'
-        OESdataDict, processStarted = measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir, savedate, OESdataDict, processStarted = processStarted, darkChannel=6)
+        OESdataDict, processStarted = measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir, savedate, OESdataDict, processStarted = processStarted, darkInt=darkInt)
         if plotCounter == 0:
             if runNum != None:
                 plottingProc = subprocess.Popen(['python',plotOESfile,'True',str(runNum),process])
             else:
                 plottingProc = subprocess.Popen(['python',plotOESfile,'True','none',process])
             plotCounter += 1
-    
-    mpdll.MPM_CloseConnection()
