@@ -281,14 +281,10 @@ def prepare_for_OES_measurements(savedir, savedate):
     return zoneList, measuredElementList, OESmaxMins, OESdataDict
 
         
-def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir, savedate, OESdataDict, darkInt, processStarted, numberOfScans = procNumScans):
+def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir, savedate, OESdataDict, darkInt, processStarted, numberOfScans = procNumScans, darkChannel = 6):
     global shutOffStartTime
     global shutOffTimerStarted
     global timeSinceShutOff
-    
-    #need to measure dark int spectrum each time because of drift (probably from temperature)
-    mpdll.MPM_SetChannel(darkChannel)
-    time.sleep(1) # have to wait at least 0.5s for multiplexer to switch
     
     # write darkInt to file in case something is screwed up
     notWritten = True
