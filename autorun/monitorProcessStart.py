@@ -16,6 +16,7 @@ import ctypes, time, os, csv, matplotlib, subprocess, sys, datetime, re
 import seabreeze
 seabreeze.use('pyseabreeze')
 import seabreeze.spectrometers as sb
+import easygui as eg
 sys.path.append('Y:/Nate/git/nuvosun-python-lib/')
 import nuvosunlib as nsl
 
@@ -42,9 +43,21 @@ mpdll = ctypes.WinDLL(MPMdriverPath + 'MPM2000drv.dll')
 
 def connect_to_multiplexer(comPort):
     #takes com port as a string, e.g. 'COM1'
-    mpdll.MPM_OpenConnection(comPort)
-
-    mpdll.MPM_InitializeDevice()
+    multiNotConnected = True
+    
+    a = mpdll.MPM_OpenConnection(comPort)
+    b = mpdll.MPM_InitializeDevice()
+    
+    while multiNotConnected:
+        if a == 1 and b == 1:
+            print 'connected to multiplexer successfully'
+            multiNotConnected = False
+        else:
+            print 'unable to connect to multiplexer...check to make sure com port is correct, try unplugging and replugging multiplexer USB cable'
+            print 'com port is',comPort
+            eg.msgbox('unable to connect to multiplexer...check to make sure com port is correct, try unplugging and replugging multiplexer USB cable. Com port set as ' + comPort)
+            raw_input('press enter to exit')
+            exit()
 
     #serialNo = mpdll.MPM_GetSerialNumber() #giving 0 for both multiplexers...not sure if this is correct.  OES multiplexer is COM1
 
@@ -123,7 +136,7 @@ def check_for_plasma(OESchannel,darkChannel,numberOfScans=15):
 ArMinIndex, ArMaxIndex = nsl.get_WL_indices(745.0, 760.0,
                                                     nsl.getOOWls())  # gets wl indices for ar peak to detect if plasma is on or not
 
-connect_to_multiplexer('COM5')
+connect_to_multiplexer(MPcomPort)
 
 global spec
 spec = connect_to_spectrometer()
