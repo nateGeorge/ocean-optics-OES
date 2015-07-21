@@ -319,7 +319,7 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                 #integrates raw OES spectrum
                 OESdataDict[zone][element] = integrate.simps(rawOESspectrum[OESmaxMins[element+'MIN']:OESmaxMins[element+'MAX']],wl[OESmaxMins[element+'MIN']:OESmaxMins[element+'MAX']])
                 
-                #checks to see if machine has shut down (plasma is off).  once it is off for 10 minutes, stop measuring
+                #checks to see if machine has shut down (plasma is off).  once it is off for 3 minutes, stop measuring
                 if element == 'Fi':
                     if OESdataDict[zone][element] >= 5000:
                         if not processStarted:
@@ -337,8 +337,8 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                             if element == 'Ar-811':
                                 print 'zone',zone,'is off, time since tool stopped sputtering is,',timeSinceShutOff
                                 print 'close this window to shut down OES'
-                            if timeSinceShutOff > 150: # if all 4 zones are off twice through the cycle
-                                print 'shutting down program because shutofftimer exceeded (targets off for 10 mins)'
+                            if timeSinceShutOff > 5*60: # if sputtering off for 5 mins
+                                print 'shutting down program because shutofftimer exceeded (targets off for 5 mins)'
                                 # close plotting process if it is open
                                 if subprocess.Popen.poll(plottingProc) == None:
                                     subprocess.Popen.terminate(plottingProc)
