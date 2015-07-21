@@ -155,6 +155,7 @@ def connect_to_spectrometer(intTime=procIntTime,darkChannel=6,numberOfScans=proc
     time.sleep(1) # have to wait at least 0.5s for multiplexer to switch
     
     #averages 40 measurements for the dark background spectrum
+    print 'taking background reading, should take ',str(2*numberOfScans*intTime/(1000000000*60)),'minutes'
     darkInt = spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
     for each in range(numberOfScans*2 - 1):
         darkInt += spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
