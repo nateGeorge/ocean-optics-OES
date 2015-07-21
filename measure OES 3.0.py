@@ -339,6 +339,13 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                                 print 'close this window to shut down OES'
                             if timeSinceShutOff > 5*60: # if sputtering off for 5 mins
                                 print 'shutting down program because shutofftimer exceeded (targets off for 5 mins)'
+                                expBasepath = 'Y:/Experiment Summaries/Year ' + str(datetime.now().year) + '/'
+                                expRunPath = basepath + '\\' + 'S' + str(runNum).zfill(5) + '\\'
+                                expRunPath = basepath + '\\' + 'S' + str(runNum).zfill(5) + '\\' + tool + ' OES data' 
+                                for eachPath in [expBasepath,expRunPath,expOESpath]:
+                                    if not os.path.exists(expRunPath):
+                                        os.mkdir(expRunPath)
+                                nsl.backupFiles(savedir,expOESpath)
                                 # close plotting process if it is open
                                 if subprocess.Popen.poll(plottingProc) == None:
                                     subprocess.Popen.terminate(plottingProc)
