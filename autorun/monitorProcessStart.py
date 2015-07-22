@@ -13,7 +13,6 @@ Zone    Target  Multiplexer channel
 '''
 
 import ctypes, time, os, csv, matplotlib, subprocess, sys, datetime, re
-from datetime import datetime
 import seabreeze
 seabreeze.use('pyseabreeze')
 import seabreeze.spectrometers as sb
@@ -21,7 +20,7 @@ import easygui as eg
 sys.path.append('Y:/Nate/git/nuvosun-python-lib/')
 import nuvosunlib as nsl
 
-startTime = datetime.now()
+startTime = datetime.datetime.now()
 
 measureOESfile = 'C:/OESdata/measure OES 3.0.py'
 
@@ -148,7 +147,7 @@ arOnCount = 0
 global arOffCount
 arOffCount = 0
 while True:
-    elapsedTime = datetime.now() - startTime
+    elapsedTime = datetime.datetime.now() - startTime
     elapsedHours = elapsedTime.total_seconds()/(3600)
     if elapsedHours > 8:
         print 'stopping monitor for sputtering at ', datetime.now()
