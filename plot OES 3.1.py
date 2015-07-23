@@ -155,9 +155,9 @@ def plotdata(*args):
         GaSum = 0
         Cu3total = 0
         for zone in OESdataDict.keys():
-            Cu3[zone] = float(OESdataDict[zone]['Cu-515'][-1])/(float(OESdataDict[zone]['In-451'][-1])+float(OESdataDict[zone]['Ga-417'][-1]))
+            Cu3[zone] = float(OESdataDict[zone]['Cu-325-327'][-1])/(float(OESdataDict[zone]['In-451'][-1])+float(OESdataDict[zone]['Ga-417'][-1]))
             
-            CuSum += float(OESdataDict[zone]['Cu-515'][-1]) / float(OESdataDict[zone]['Ar-811'][-1])
+            CuSum += float(OESdataDict[zone]['Cu-325-327'][-1]) / float(OESdataDict[zone]['Ar-811'][-1])
             InSum += float(OESdataDict[zone]['In-451'][-1]) / float(OESdataDict[zone]['Ar-811'][-1])
             GaSum += float(OESdataDict[zone]['Ga-417'][-1]) / float(OESdataDict[zone]['Ar-811'][-1])
             
@@ -173,7 +173,7 @@ def plotdata(*args):
         # plot the data
         if datetime.strptime(savedate,'%m-%d-%y') >= datetime(2015,7,1): # changed to new data storage format on July 1st, 2015
             if process == 'PC':
-                elementsToPlot = {'H-656/Fi' : elementDict['H-656']['color'], 'Cu-515/Fi' : elementDict['Cu-515']['color'], 'In-451/Fi' : elementDict['In-451']['color'], 'Ga-417/Fi' : elementDict['Ga-417']['color'], 'Na-589/Fi' : elementDict['Na-589']['color']}
+                elementsToPlot = {'H-656/Fi' : elementDict['H-656']['color'], 'Cu-325-327/Fi' : elementDict['Cu-325-327']['color'], 'In-451/Fi' : elementDict['In-451']['color'], 'Ga-417/Fi' : elementDict['Ga-417']['color'], 'Na-589/Fi' : elementDict['Na-589']['color']}
             elif process == 'BE':
                 elementsToPlot = {'Mo-380/Fi' : elementDict['Mo-380']['color'], 'Ti-496-522/Fi' : elementDict['Ti-496-522']['color'], 'H-656/Fi' : elementDict['H-656']['color'], 'Na-589/Fi' : elementDict['Na-589']['color']}
         else:
@@ -222,7 +222,10 @@ def plotdata(*args):
                     spine.set_edgecolor('w')
                 eval('ax'+zone+'Fi').plot_date(OESdates, OESdataDict[zone]['Fi'], color = elementDict['Fi']['color'])
                 eval('ax'+zone+'Fi').plot_date(OESdates, OESdataDict[zone]['Fi'], '--', color = elementDict['Fi']['color'], linewidth = 4, label = 'Fi')
-                eval('ax' + zoneList[2] + 'Fi').set_ylabel('Full intensity (Fi) of plasma', color='w')
+                if len(zoneList) < 2:
+                    eval('ax' + zoneList[2] + 'Fi').set_ylabel('Full intensity (Fi) of plasma', color='w')
+                else:
+                    eval('ax' + zoneList[0] + 'Fi').set_ylabel('Full intensity (Fi) of plasma', color='w')
             
             for element in elementsToPlot.keys():
                 eval('ax'+zone).plot_date(OESdates, OESdataDict[zone][element], color = elementsToPlot[element])
