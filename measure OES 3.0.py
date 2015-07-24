@@ -132,7 +132,7 @@ def connect_to_multiplexer(comPort):
 
 
 def connect_to_spectrometer(intTime=procIntTime,darkChannel=6,numberOfScans=procNumScans):
-    #connects to first connected spectrometer it finds, takes intTime as integration time in nanoseconds, darkChannel as 
+    #connects to first connected spectrometer it finds, takes intTime as integration time in microseconds, darkChannel as 
     #multiplexer channel that is blocked from all light
     #default int time is 1s, channel6 on the multiplexer is blocked off on MC02
     #measures dark spectrum
@@ -150,12 +150,12 @@ def connect_to_spectrometer(intTime=procIntTime,darkChannel=6,numberOfScans=proc
         print 'try unplugging usb cable from spectrometer and restart measurement'
         raw_input('press enter to exit')
         exit()
-    spec.integration_time_micros(intTime) #actually in nanoseconds not microseconds...WTF
+    spec.integration_time_micros(intTime)
     mpdll.MPM_SetChannel(darkChannel)
     time.sleep(1) # have to wait at least 0.5s for multiplexer to switch
     
     #averages 40 measurements for the dark background spectrum
-    print 'taking background reading, should take ',str(2*numberOfScans*intTime/(1000000000*60)),'minutes'
+    print 'taking background reading, should take ',str(2*numberOfScans*intTime/(1000000*60.)),'minutes'
     darkInt = spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
     for each in range(numberOfScans*2 - 1):
         darkInt += spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)

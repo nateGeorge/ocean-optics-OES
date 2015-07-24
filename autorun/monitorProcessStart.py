@@ -64,7 +64,7 @@ def connect_to_multiplexer(comPort):
     #serialNo = mpdll.MPM_GetSerialNumber() #giving 0 for both multiplexers...not sure if this is correct.  OES multiplexer is COM1
 
 def connect_to_spectrometer(intTime=1000000,darkChannel=6,numberOfScans=15):
-    #connects to first connected spectrometer it finds, takes intTime as integration time in nanoseconds, darkChannel as 
+    #connects to first connected spectrometer it finds, takes intTime as integration time in microseconds, darkChannel as 
     #multiplexer channel that is blocked from all light
     #default int time is 1s, channel6 on the multiplexer is blocked off on MC02
     #measures dark spectrum
@@ -77,7 +77,7 @@ def connect_to_spectrometer(intTime=1000000,darkChannel=6,numberOfScans=15):
     
     time.sleep(1) #need to wait for a second, otherwise gives error in next step
     spec = sb.Spectrometer(devices[0])
-    spec.integration_time_micros(intTime) #actually in nanoseconds not microseconds...WTF
+    spec.integration_time_micros(intTime)
     return spec
     
 def check_for_plasma(OESchannel,darkChannel,numberOfScans=15):
