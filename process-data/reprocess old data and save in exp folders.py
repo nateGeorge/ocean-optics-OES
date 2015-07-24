@@ -3,6 +3,7 @@ from datetime import datetime
 sys.path.append("Y:/Nate/git/nuvosun-python-lib/")
 import nuvosunlib as nsl
 
+runDates = nsl.getRunDates(bywebID = False)
 
 def getAllOESfolders(baseDataDir):
     '''
@@ -15,18 +16,21 @@ def getAllOESfolders(baseDataDir):
         if os.path.isdir(filePath):
             OESfolders[file] = {}
             OESfolders[file]['path'] = filePath
-            getRunNumber(filePath)
-            OESstartDate = re.search('\d\d-\d\d-\d\d',folder).group(0)
-            OESstartDate = datetime.datetime.strptime(OESstartDate, '%m-%d-%y')
+            OESstartDate = re.search('\d\d-\d\d-\d\d', file).group(0)
+            OESfolders[file]['start date'] = datetime.strptime(OESstartDate, '%m-%d-%y')
+            if re.search('MC\d\d', file):
+                tool = re.search('MC\d\d', file).group(0)
+                OESfolders[file]['tool'] = tool
+            else:
+                tool = 'MC02'
+                OESfolders[file]['tool'] = 'MC02'
+            #getRunNumber(filePath, OESstartDate, tool)
     return OESfolders
 
-def getRunNumber(filePath):
+def getRunNumber(filePath, OESstartDate, tool):
     '''
     Returns run number for a given OES file path.
     '''
-    runDates = nsl.getRunDates()
-    print sorted(runDates.keys())
-    print sorted(runDates[runDates.keys()[0]].keys())
     
     OESfiles = os.listdir(filePath)
     for file in OESfiles:
@@ -46,20 +50,28 @@ def getRunNumber(filePath):
     dateMatched = False
     for run in runDates:
         if BEprocess:
-            #print runDates[run]['BE date'], OESstartDate
-            if runDates[run]['BE date'] == OESstartDate and runDates[run]['BE tool'] == tool:
+            BEdates = []
+            for key in runDates[run]['BE Run'].keys():
+                if key != 'DW range':
+                    BEdates.append(datetime.strftime(key,'%m-%d-%y'))
+            #print BEdates, OESstartDate, runDates[run]['BE Tool'], tool
+            if OESstartDate in runDates[run]['BE Run'].keys() and runDates[run]['BE Tool'] == tool:
                 currentRun = run
                 dateMatched = True
-                print 'found run ' + run + ' on date ' + str(runDates[run]['BE date']) + ' matching OES start date of ' + str(OESstartDate)
+                print 'found run ' + run + ' on date ' + str(runDates[run]['BE Run'].keys()[1]) + ' matching OES start date of ' + str(OESstartDate)
         elif PCprocess:
-            #print runDates[run]['PC date'], OESstartDate
-            if runDates[run]['PC date'] == OESstartDate and runDates[run]['PC tool'] == tool:
+            PCdates = []
+            for key in runDates[run]['PC Run'].keys():
+                if key != 'DW range':
+                    PCdates.append(datetime.strftime(key,'%m-%d-%y'))
+            #print PCdates, OESstartDate, runDates[run]['PC Tool'], tool
+            if OESstartDate in runDates[run]['BE Run'].keys() and runDates[run]['PC Tool'] == tool:
                 currentRun = run
                 dateMatched = True
-                print 'found run ' + run + ' on date ' + str(runDates[run]['PC date']) + ' matching OES start date of ' + str(OESstartDate)
+                print 'found run ' + run + ' on date ' + str(runDates[run]['PC Run'].keys()[1]) + ' matching OES start date of ' + str(OESstartDate)
     if not dateMatched:
-        print 'no run date matched', folder
-        return None
+        print 'no run date matched', filePath
+        return None, None
     # get list of actual zones measured
     zoneList = {}
     for zone in tempZoneList:
@@ -90,11 +102,8 @@ def copyOESdata(savedir, runNum):
             os.mkdir(expRunPath)
     nsl.backupFiles(savedir,expOESpath)
 
-
-    
-
 OESdir = 'Y:/Nate/new MC02 OES program/backup from MC02 computer/data/' # change to : 'Y:/Experiment Summaries/MC sputter tools OES/data/raw from tool'
 OESfolders = getAllOESfolders(OESdir)
-for key in sorted(OESfolders.keys()):
-    currentRun, zoneList = getRunNumber(key)
+for folder in sorted(OESfolders.keys()):
+    currentRun, zoneList = getRunNumber(OESfolders[folder]['path'], OESfolders[folder]['start date'], OESfolders[folder]['tool'])
     print currentRun
