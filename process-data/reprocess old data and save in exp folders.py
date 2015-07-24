@@ -93,8 +93,8 @@ def copyOESdata(savedir, runNum):
 
     
 
-OESdir = 'Y:/Nate/new MC02 OES program/backup from MC02 computer/data/'
+OESdir = 'Y:/Nate/new MC02 OES program/backup from MC02 computer/data/' # change to : 'Y:/Experiment Summaries/MC sputter tools OES/data/raw from tool'
 OESfolders = getAllOESfolders(OESdir)
-for key in sorted(OESfiles.keys()):
+for key in sorted(OESfolders.keys()):
     currentRun, zoneList = getRunNumber(key)
     print currentRun
