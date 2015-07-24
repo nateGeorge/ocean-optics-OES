@@ -44,7 +44,7 @@ for file in files:
     if re.search('MC\d\d.txt',file):
         tool = file[:4]
 
-BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort = nsl.load_OES_config(tool)
+BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort, BEintTime, BEnumScans, PCintTime, PCnumScans = nsl.load_OES_config(tool)
 
 try:
     runNum = sys.argv[1]
@@ -74,12 +74,12 @@ except:
 
 if process == 'BE':
     zoneList = BEzoneList
-    procIntTime = 1000000 # use 1 s integration time for BE, otherwise it saturates
-    procNumScans = 20
+    procIntTime = BEintTime
+    procNumScans = BEnumScans
 elif process == 'PC':
     zoneList = PCzoneList
-    procIntTime = 3000000 # use 3 s integration time for PC, otherwise it saturates Z6
-    procNumScans = 20
+    procIntTime = PCintTime
+    procNumScans = PCnumScans
 else:
     eg.msgbox(msg='You must choose either BE or PC. Try running the program again.')
     
