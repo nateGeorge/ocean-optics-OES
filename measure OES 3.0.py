@@ -74,10 +74,12 @@ except:
 
 if process == 'BE':
     zoneList = BEzoneList
+    sumZoneList = []
     procIntTime = BEintTime
     procNumScans = BEnumScans
 elif process == 'PC':
     zoneList = PCzoneList
+    sumZoneList = ['5A + 5B', 'zones 5 + 6']
     procIntTime = PCintTime
     procNumScans = PCnumScans
 else:
@@ -228,9 +230,9 @@ def prepare_for_OES_measurements(savedir, savedate):
 
     #make list of elements and zones measured
     measuredElementList = elementList + normalizationKeys#use this: ['Cu', 'In', 'Ga', 'Ar', 'O2', 'H2'] to restrict list as needed
-    combinedList = [zone + ' ' + element for zone in zoneList for element in measuredElementList] #Combines list like 5A Cu, 5A In, etc...
+    combinedList = [zone + ' ' + element for zone in (zoneList + sumZoneList) for element in measuredElementList] #Combines list like 5A Cu, 5A In, etc...
     OESdataDict={}
-    for zone in zoneList:
+    for zone in zoneList + sumZoneList:
         OESdataDict[zone] = {}
         OESdataDict[zone]['DT'] = ''
         for element in measuredElementList:
@@ -289,7 +291,7 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
     
     #measures the OES spectra in each zone, and for each element.  appends the CSV files storing the data.
     for zone in zoneList:
-        OESdataDict[zone]['DT'], rawOESspectrum = measure_OES_spectrum(zoneToIndexMap[zone], darkInt)
+        OESdataDict[zone]['DT'], rawOESspectrum = measure_OES_spectrum(zoneToIndexMap[zone], darkInt)          
         for element in measuredElementList:
             if re.search('/', element):
                 # calculate normalizations
@@ -352,14 +354,31 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                 print zone + ' raw spectra file (' + savedir + savedate + ' -- ' + zone + ' OES raw spectra.csv' + ') is open another program, please close it'
                 print '*****************\n'
                 time.sleep(5)
-            
+        
+        # if running PC, add zones 5A+5B, and all zones for composition measurements
+        if process == 'PC':
+            if zone == '5B':
+                for element in measuredElementList:
+                    for element in OESdataDict['5B'].keys():
+                        if key != 'DT':
+                            OESdata['5A + 5B'][element] = OESdata['5A'][key] + OESdata['5B'][key]
+                        else:
+                            OESdata['5A + 5B'][key] = OESdata['5B'][key]
+            if zone == '6B':
+                for element in measuredElementList:
+                    for element in OESdataDict['5B'].keys():
+                        if key != 'DT':
+                            OESdata['zones 5 + 6'][element] = OESdata['5A'][key] + OESdata['5B'][key] + OESdata['6A'][key] + OESdata['6B'][key]
+                        else:
+                            OESdata['zones 5 + 6'][key] = OESdata['6B'][key]
+        
         #opens file to save OES integrated data, but checks if it is open elsewhere first and warns user
         notWritten = True
         while notWritten:
             try:    
                 with open(savedir + savedate + ' -- OES signals.csv', 'ab') as csvfile:
                     spamwriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-                    spamwriter.writerow([OESdataDict[zone]['DT']]+[OESdataDict[zone][element] for zone in zoneList for element in measuredElementList])
+                    spamwriter.writerow([OESdataDict[zone]['DT']]+[OESdataDict[zone][element] for zone in (zoneList + sumZoneList) for element in measuredElementList])
                 notWritten = False
             except IOError:
                 print '\n*****************'
