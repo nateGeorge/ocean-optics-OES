@@ -150,7 +150,7 @@ while True:
     elapsedTime = datetime.datetime.now() - startTime
     elapsedHours = elapsedTime.total_seconds()/(3600)
     if elapsedHours > 8:
-        print 'stopping monitor for sputtering at ', datetime.now()
+        print 'stopping monitor for sputtering at ', datetime.datetime.now()
         print 'have been waiting 8 hours'
         exit()
     for zone in zoneList:
