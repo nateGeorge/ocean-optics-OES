@@ -159,7 +159,7 @@ def connect_to_spectrometer(intTime=procIntTime,darkChannel=6,numberOfScans=proc
     darkInt = spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
     for each in range(numberOfScans*2 - 1):
         darkInt += spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
-    darkInt = darkInt/float(numberOfScans)
+    darkInt = darkInt/float(numberOfScans*2)
     wl = spec.wavelengths()
     # write darkInt to file in case its needed
     
@@ -287,21 +287,6 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
     global shutOffTimerStarted
     global timeSinceShutOff
     
-    # write darkInt to file in case something is screwed up
-    notWritten = True
-    while notWritten:
-        try:
-            with open(savedir + savedate + ' -- ' + ' OES raw spectra -- Dark Int.csv', 'ab') as csvfile:
-                spamwriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-                spamwriter.writerow([datetime.strftime(datetime.now(), '%m/%d/%y %H:%M:%S %p')]+[eachInt for eachInt in darkInt])
-            notWritten = False
-        except IOError:
-            print '\n*****************'
-            print ' raw spectra file (' + savedir + savedate + ' -- ' + ' OES raw spectra -- Dark Int.csv' + ') is open another program, please close it'
-            print '*****************\n'
-            time.sleep(5)
-        
-
     #measures the OES spectra in each zone, and for each element.  appends the CSV files storing the data.
     for zone in zoneList:
         OESdataDict[zone]['DT'], rawOESspectrum = measure_OES_spectrum(zoneToIndexMap[zone], darkInt)
