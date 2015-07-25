@@ -318,12 +318,12 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                 
                 # checks to see if machine has shut down (plasma is off).  once it is off for 3 minutes, stop measuring
                 if element == 'Fi':
-                    if OESdataDict[zone][element] >= 5000:
+                    if OESdataDict[zone][element] >= 10000:
                         if not processStarted:
                             processStarted = True
                         shutOffTimerStarted = False
                         timeSinceShutOff = 0
-                    elif OESdataDict[zone][element] <= 5000 and processStarted:
+                    elif OESdataDict[zone][element] <= 10000 and processStarted:
                         if not shutOffTimerStarted:
                             if element == 'Ar-811':
                                 print 'starting shutoff timer because zone', zone, 'is off'
