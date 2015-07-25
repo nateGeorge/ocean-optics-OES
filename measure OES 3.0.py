@@ -348,6 +348,7 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                                     subprocess.Popen.terminate(plottingProc)
                                 subprocess.Popen(['python',autoBackupfile,'False'])
                                 mpdll.MPM_CloseConnection()
+                                dataBase.close()
                                 raw_input('press enter to exit')
                                 exit()
                         
@@ -382,7 +383,7 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
         qs = '?, '*(len(combinedList) + 2)
         exStr = 'INSERT INTO oesdata VALUES (' + qs[:-2] + ')'
         curse.execute(exStr, [tool] + [OESdataDict[zone]['DT']]+[OESdataDict[zone][element] for zone in (zoneList + sumZoneList) for element in measuredElementList])
-        
+        dataBase.commit()
         # opens file to save OES integrated data, but checks if it is open elsewhere first and warns user
         notWritten = True
         while notWritten:
