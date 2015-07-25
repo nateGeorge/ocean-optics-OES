@@ -369,19 +369,15 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
         # if running PC, add zones 5A+5B, and all zones for composition measurements
         if process == 'PC':
             if zone == '5B':
-                for element in measuredElementList:
-                    for element in OESdataDict['5B'].keys():
-                        if key != 'DT':
-                            OESdata['5A + 5B'][element] = OESdata['5A'][key] + OESdata['5B'][key]
-                        else:
-                            OESdata['5A + 5B'][key] = OESdata['5B'][key]
+                for element in OESdataDict['5B'].keys():
+                    if element != 'DT':
+                        OESdataDict['5A + 5B'][element] = OESdataDict['5A'][element] + OESdataDict['5B'][element]
+                    OESdataDict['5A + 5B']['DT'] = OESdataDict['5B']['DT']
             if zone == '6B':
-                for element in measuredElementList:
-                    for element in OESdataDict['5B'].keys():
-                        if key != 'DT':
-                            OESdata['zones 5 + 6'][element] = OESdata['5A'][key] + OESdata['5B'][key] + OESdata['6A'][key] + OESdata['6B'][key]
-                        else:
-                            OESdata['zones 5 + 6'][key] = OESdata['6B'][key]
+                for element in OESdataDict['6B'].keys():
+                    if key != 'DT':
+                        OESdataDict['zones 5 + 6'][element] = OESdata['5A'][element] + OESdata['5B'][element] + OESdata['6A'][element] + OESdata['6B'][element]
+                    OESdata['zones 5 + 6']['DT'] = OESdata['6B']['DT']
         
         # save integration data to sqlite database
         qs = '?, '*(len(combinedList) + 2)
