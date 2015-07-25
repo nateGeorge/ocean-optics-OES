@@ -21,7 +21,7 @@ for file in files:
     if re.search('MC\d\d.txt',file):
         tool = file[:4]
 
-BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort = nsl.load_OES_config(tool)
+BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort, BEintTime, BEnumScans, PCintTime, PCnumScans = nsl.load_OES_config(tool)
 
 try:
     todaysRun = sys.argv[1]
