@@ -1,3 +1,5 @@
+# takes 3 arguments: run number (i.e. 500), process (i.e. BE), and tool (i.e. MC02, but not really necessary as it picks this up automatically)
+
 '''
 spectrometer range: 200 to 900 nm
 previous program used these OES lines:
@@ -23,6 +25,7 @@ Zone    Target  Multiplexer channel
 
 '''
 import ctypes, time, os, csv, matplotlib, subprocess, sys, re
+import sqlite3 as sq
 import pylab as plt
 import easygui as eg
 import seabreeze
@@ -34,6 +37,12 @@ import pylab as plt
 import matplotlib.dates as mdates
 sys.path.append("Y:/Nate/git/nuvosun-python-lib/")
 import nuvosunlib as nsl
+
+
+# connect to sqlite DB and get cursor
+
+dataBase = sq.connect('C:/OESdata/allOESData.db')
+curse = dataBase.cursor()
 
 plotOESfile = 'C:/OESdata/plot OES 3.1.py'
 autoBackupfile = 'C:/OESdata/auto backup files, read schedule and start measurements.py'
@@ -75,12 +84,12 @@ except:
 if process == 'BE':
     zoneList = BEzoneList
     sumZoneList = []
-    procIntTime = BEintTime
+    procIntTime = BEintTime * 1000000 # convert to microseconds
     procNumScans = BEnumScans
 elif process == 'PC':
     zoneList = PCzoneList
     sumZoneList = ['5A + 5B', 'zones 5 + 6']
-    procIntTime = PCintTime
+    procIntTime = PCintTime * 1000000 # convert to microseconds
     procNumScans = PCnumScans
 else:
     eg.msgbox(msg='You must choose either BE or PC. Try running the program again.')
@@ -130,9 +139,6 @@ def connect_to_multiplexer(comPort):
 
     #serialNo = mpdll.MPM_GetSerialNumber() #giving 0 for both multiplexers...not sure if this is correct.  OES multiplexer is COM1
 
-    
-
-
 def connect_to_spectrometer(intTime=procIntTime,darkChannel=6,numberOfScans=procNumScans):
     #connects to first connected spectrometer it finds, takes intTime as integration time in microseconds, darkChannel as 
     #multiplexer channel that is blocked from all light
@@ -157,11 +163,11 @@ def connect_to_spectrometer(intTime=procIntTime,darkChannel=6,numberOfScans=proc
     time.sleep(1) # have to wait at least 0.5s for multiplexer to switch
     
     #averages 40 measurements for the dark background spectrum
-    print 'taking background reading, should take ',str(2*numberOfScans*intTime/(1000000.)),'seconds'
+    print 'taking background reading, should take ', str(2*numberOfScans*intTime/(1000000.)),'seconds'
     darkInt = spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
-    for each in range(numberOfScans*2 - 1):
-        darkInt += spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
-    darkInt = darkInt/float(numberOfScans*2)
+    #for each in range(numberOfScans*2 - 1):
+    #    darkInt += spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
+    #darkInt = darkInt/float(numberOfScans*2)
     wl = spec.wavelengths()
     # write darkInt to file in case its needed
     
@@ -255,10 +261,15 @@ def prepare_for_OES_measurements(savedir, savedate):
                     print zoneList[each] + ' raw spectra file (' + savedir + savedate + ' -- ' + zoneList[each] + ' OES raw spectra.csv' + ') is open another program, please close it'
                     print '*****************\n'
                     time.sleep(5)
+                    
+    # create sqlite DB if not already existing
+    
+    exstr = '(tool TEXT, datetime TEXT, ' + ', '.join(['\"' + e + '\"' + ' REAL' for e in combinedList]) + ')'
+    curse.execute("CREATE TABLE IF NOT EXISTS oesdata " + exstr)
         
-    #start OES integrated signals file and save labels on first row (if doesn't already exist)
+    # start OES integrated signals file and save labels on first row (if doesn't already exist)
     if os.path.isfile(savedir + savedate + ' -- OES signals.csv'):
-        with open(savedir + savedate + ' -- ' + zone + ' OES raw spectra.csv', 'rb') as csvfile:
+        with open(savedir + savedate + ' -- OES signals.csv', 'rb') as csvfile:
             spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
             firstRow = True
             if not firstRow:
@@ -281,10 +292,10 @@ def prepare_for_OES_measurements(savedir, savedate):
                 print zoneList[each] + ' raw spectra file (' + savedir + savedate + ' -- ' + zoneList[each] + ' OES raw spectra.csv' + ') is open another program, please close it'
                 print '*****************\n'
                 time.sleep(5)
-    return zoneList, measuredElementList, OESmaxMins, OESdataDict
+    return zoneList, measuredElementList, OESmaxMins, OESdataDict, combinedList
 
         
-def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir, savedate, OESdataDict, darkInt, processStarted, numberOfScans = procNumScans, darkChannel = 6):
+def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir, savedate, OESdataDict, combinedList, darkInt, processStarted, numberOfScans = procNumScans, darkChannel = 6):
     global shutOffStartTime
     global shutOffTimerStarted
     global timeSinceShutOff
@@ -327,8 +338,8 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                             if timeSinceShutOff > 5*60: # if sputtering off for 5 mins
                                 print 'shutting down program because shutofftimer exceeded (targets off for 5 mins)'
                                 expBasepath = 'Y:/Experiment Summaries/Year ' + str(datetime.now().year) + '/'
-                                expRunPath = basepath + '\\' + 'S' + str(runNum).zfill(5) + '\\'
-                                expRunPath = basepath + '\\' + 'S' + str(runNum).zfill(5) + '\\' + tool + ' OES data' 
+                                expRunPath = exBasepath + '/' + 'S' + str(runNum).zfill(5) + '/'
+                                expRunPath = exBasepath + '/' + 'S' + str(runNum).zfill(5) + '/' + tool + ' OES data' 
                                 for eachPath in [expBasepath,expRunPath,expOESpath]:
                                     if not os.path.exists(expRunPath):
                                         os.mkdir(expRunPath)
@@ -372,7 +383,12 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                         else:
                             OESdata['zones 5 + 6'][key] = OESdata['6B'][key]
         
-        #opens file to save OES integrated data, but checks if it is open elsewhere first and warns user
+        # save integration data to sqlite database
+        qs = '?, '*(len(combinedList) + 2)
+        exStr = 'INSERT INTO oesdata VALUES (' + qs[:-2] + ')'
+        curse.execute(exStr, [tool] + [OESdataDict[zone]['DT']]+[OESdataDict[zone][element] for zone in (zoneList + sumZoneList) for element in measuredElementList])
+        
+        # opens file to save OES integrated data, but checks if it is open elsewhere first and warns user
         notWritten = True
         while notWritten:
             try:    
@@ -414,12 +430,12 @@ if __name__ == '__main__':
     spec,wl,darkInt = connect_to_spectrometer()
 
     print '\n preparing data files... \n'   
-    zoneList, measuredElementList, OESmaxMins, OESdataDict = prepare_for_OES_measurements(savedir, savedate)
+    zoneList, measuredElementList, OESmaxMins, OESdataDict, combinedList = prepare_for_OES_measurements(savedir, savedate)
     
     plotCounter = 0
     while True:
         print '\n collecting spectra for zones ' + ', '.join(zoneList) + '... \n'
-        OESdataDict, processStarted = measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir, savedate, OESdataDict, processStarted = processStarted, darkInt=darkInt)
+        OESdataDict, processStarted = measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir, savedate, OESdataDict, combinedList, processStarted = processStarted, darkInt=darkInt)
         if plotCounter == 0:
             if runNum != None:
                 plottingProc = subprocess.Popen(['python',plotOESfile,'True',str(runNum),process])
