@@ -99,7 +99,7 @@ ArMinIndex, ArMaxIndex = nsl.get_WL_indices(745.0, 760.0,
 
 
 def connect_to_multiplexer(comPort):
-    #takes com port as a string, e.g. 'COM1'
+    # takes com port as a string, e.g. 'COM1'
     multiNotConnected = True
     
     a = mpdll.MPM_OpenConnection(comPort)
@@ -115,7 +115,7 @@ def connect_to_multiplexer(comPort):
             raw_input('press enter to exit')
             exit()
             
-            #work in progress...popup message to warn operator of what's going on
+            # work in progress...popup message to warn operator of what's going on
             
             '''
             fig = plt.figure()
@@ -137,18 +137,18 @@ def connect_to_multiplexer(comPort):
 
     
 
-    #serialNo = mpdll.MPM_GetSerialNumber() #giving 0 for both multiplexers...not sure if this is correct.  OES multiplexer is COM1
+    # serialNo = mpdll.MPM_GetSerialNumber() #giving 0 for both multiplexers...not sure if this is correct.  OES multiplexer is COM1
 
 def connect_to_spectrometer(intTime=procIntTime,darkChannel=6,numberOfScans=procNumScans):
-    #connects to first connected spectrometer it finds, takes intTime as integration time in microseconds, darkChannel as 
-    #multiplexer channel that is blocked from all light
-    #default int time is 1s, channel6 on the multiplexer is blocked off on MC02
-    #measures dark spectrum
-    #returns the spectrometer instance, spectrometer wavelengths, and measured dark spectrum
+    # connects to first connected spectrometer it finds, takes intTime as integration time in microseconds, darkChannel as 
+    # multiplexer channel that is blocked from all light
+    # default int time is 1s, channel6 on the multiplexer is blocked off on MC02
+    # measures dark spectrum
+    # returns the spectrometer instance, spectrometer wavelengths, and measured dark spectrum
     time.sleep(1)
     devices = sb.list_devices()
     
-    #print devices[0] #use this line to print device name
+    # print devices[0] #use this line to print device name
     
     time.sleep(1) #need to wait for a second, otherwise gives error in next step
     try:
@@ -162,12 +162,11 @@ def connect_to_spectrometer(intTime=procIntTime,darkChannel=6,numberOfScans=proc
     mpdll.MPM_SetChannel(darkChannel)
     time.sleep(1) # have to wait at least 0.5s for multiplexer to switch
     
-    #averages 40 measurements for the dark background spectrum
     print 'taking background reading, should take ', str(2*numberOfScans*intTime/(1000000.)),'seconds'
     darkInt = spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
-    #for each in range(numberOfScans*2 - 1):
-    #    darkInt += spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
-    #darkInt = darkInt/float(numberOfScans*2)
+    for each in range(numberOfScans*2 - 1):
+        darkInt += spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
+    darkInt = darkInt/float(numberOfScans*2)
     wl = spec.wavelengths()
     # write darkInt to file in case its needed
     
@@ -204,12 +203,12 @@ def connect_to_spectrometer(intTime=procIntTime,darkChannel=6,numberOfScans=proc
 
 
 def measure_OES_spectrum(OESchannel,darkInt,numberOfScans=procNumScans):
-    #takes OESchannel as the multiplexer channel that connects to the minichamber to measure a spectrum
-    #returns intensity average of 10 scans corrected with dark intensity spectrum
+    # takes OESchannel as the multiplexer channel that connects to the minichamber to measure a spectrum
+    # returns intensity average of 10 scans corrected with dark intensity spectrum
     
     mpdll.MPM_SetChannel(OESchannel)
     time.sleep(1) #need to wait at least 0.5s for multiplexer to switch inputs
-    #take average of 15 measurements
+    # take average of 15 measurements
     int1 = spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
     for each in range(numberOfScans - 1):
         int1 += spec.intensities(correct_dark_counts=True, correct_nonlinearity=True)
@@ -219,22 +218,22 @@ def measure_OES_spectrum(OESchannel,darkInt,numberOfScans=procNumScans):
     return datetime.strftime(datetime.now(), '%m/%d/%y %H:%M:%S %p'), int1 #datetime string is made to match existing format in datasystem
     
 def get_WL_indices(minWL,maxWL):
-    #returns the indices of the wl list where the min and max wavelengths are, supplied as minWL and maxWL
+    # returns the indices of the wl list where the min and max wavelengths are, supplied as minWL and maxWL
     lowerWLindex=min(range(len(wl)), key=lambda i: abs(wl[i]-minWL))
     upperWLindex=min(range(len(wl)), key=lambda i: abs(wl[i]-maxWL))
     return lowerWLindex, upperWLindex   
     
 def prepare_for_OES_measurements(savedir, savedate):
-    #get indices of wavelength and intensity arrays for integration of OES peaks
+    # get indices of wavelength and intensity arrays for integration of OES peaks
     elementDict, normalizationKeys = nsl.OESparameters(True)
     elementList = elementDict.keys()
     OESmaxMins = {}
     for element in elementList:
-        #gets indices of wavelength and intensity arrays for integration
+        # gets indices of wavelength and intensity arrays for integration
         OESmaxMins[element+'MIN'], OESmaxMins[element+'MAX'] = get_WL_indices(elementDict[element]['minWL'], elementDict[element]['maxWL'])
 
 
-    #make list of elements and zones measured
+    # make list of elements and zones measured
     measuredElementList = elementList + normalizationKeys#use this: ['Cu', 'In', 'Ga', 'Ar', 'O2', 'H2'] to restrict list as needed
     combinedList = [zone + ' ' + element for zone in (zoneList + sumZoneList) for element in measuredElementList] #Combines list like 5A Cu, 5A In, etc...
     OESdataDict={}
@@ -244,7 +243,7 @@ def prepare_for_OES_measurements(savedir, savedate):
         for element in measuredElementList:
             OESdataDict[zone][element]= ''
     
-    #start OES raw spectra files for each zone, and save wavelengths on first row (if doesn't already exist)
+    # start OES raw spectra files for each zone, and save wavelengths on first row (if doesn't already exist)
     for zone in zoneList:
         if not os.path.isdir(savedir):
             os.mkdir(savedir)
@@ -300,7 +299,7 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
     global shutOffTimerStarted
     global timeSinceShutOff
     
-    #measures the OES spectra in each zone, and for each element.  appends the CSV files storing the data.
+    # measures the OES spectra in each zone, and for each element.  appends the CSV files storing the data.
     for zone in zoneList:
         OESdataDict[zone]['DT'], rawOESspectrum = measure_OES_spectrum(zoneToIndexMap[zone], darkInt)          
         for element in measuredElementList:
@@ -314,10 +313,10 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                     OESdataDict[zone][element] = (OESdataDict[zone][element[:-12]] / (
                         OESdataDict[zone]['Fi'] * OESdataDict[zone]['Ar-811']))
             else:
-                #integrates raw OES spectrum
+                # integrates raw OES spectrum
                 OESdataDict[zone][element] = integrate.simps(rawOESspectrum[OESmaxMins[element+'MIN']:OESmaxMins[element+'MAX']],wl[OESmaxMins[element+'MIN']:OESmaxMins[element+'MAX']])
                 
-                #checks to see if machine has shut down (plasma is off).  once it is off for 3 minutes, stop measuring
+                # checks to see if machine has shut down (plasma is off).  once it is off for 3 minutes, stop measuring
                 if element == 'Fi':
                     if OESdataDict[zone][element] >= 5000:
                         if not processStarted:
@@ -375,9 +374,9 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                     OESdataDict['5A + 5B']['DT'] = OESdataDict['5B']['DT']
             if zone == '6B':
                 for element in OESdataDict['6B'].keys():
-                    if key != 'DT':
-                        OESdataDict['zones 5 + 6'][element] = OESdata['5A'][element] + OESdata['5B'][element] + OESdata['6A'][element] + OESdata['6B'][element]
-                    OESdata['zones 5 + 6']['DT'] = OESdata['6B']['DT']
+                    if element != 'DT':
+                        OESdataDict['zones 5 + 6'][element] = OESdataDict['5A'][element] + OESdataDict['5B'][element] + OESdataDict['6A'][element] + OESdataDict['6B'][element]
+                    OESdataDict['zones 5 + 6']['DT'] = OESdataDict['6B']['DT']
         
         # save integration data to sqlite database
         qs = '?, '*(len(combinedList) + 2)
@@ -413,14 +412,14 @@ if __name__ == '__main__':
     
     mpdll = ctypes.WinDLL(MPMdriverPath + 'MPM2000drv.dll')
     
-    savedate = datetime.strftime(datetime.now(),'%m-%d-%y') #made DT format similar to data system format
+    savedate = datetime.strftime(datetime.now(),'%m-%d-%y') # made DT format similar to data system format
     if runNum != None:
         savedir = 'C:/OESdata/' + process + ' ' + savedate + ' ' + tool + ' ' + runNum.zfill(5) + '/'
     else:
         savedir = 'C:/OESdata/' + process + ' ' + savedate + ' ' + tool + '/'
     
     print '\n connecting to multiplexer... \n'
-    connect_to_multiplexer(multiplexerComPort) #OES multiplexer is COM5 for now
+    connect_to_multiplexer(multiplexerComPort)
     
     print '\n initializing spectrometer... \n'
     spec,wl,darkInt = connect_to_spectrometer()
