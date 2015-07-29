@@ -41,9 +41,6 @@ import nuvosunlib as nsl
 
 # connect to sqlite DB and get cursor
 
-dataBase = sq.connect('C:/OESdata/allOESData.db')
-curse = dataBase.cursor()
-
 plotOESfile = 'C:/OESdata/plot OES 3.1.py'
 autoBackupfile = 'C:/OESdata/auto backup files, read schedule and start measurements.py'
 MPMdriverPath = 'Y:/Nate/Wayne/'
@@ -86,11 +83,15 @@ if process == 'BE':
     sumZoneList = []
     procIntTime = BEintTime * 1000000 # convert to microseconds
     procNumScans = BEnumScans
+    dataBase = sq.connect('C:/OESdata/allBEOESData.db')
+    curse = dataBase.cursor()
 elif process == 'PC':
     zoneList = PCzoneList
     sumZoneList = ['5A + 5B', 'zones 5 + 6']
     procIntTime = PCintTime * 1000000 # convert to microseconds
     procNumScans = PCnumScans
+    dataBase = sq.connect('C:/OESdata/allPCOESData.db')
+    curse = dataBase.cursor()
 else:
     eg.msgbox(msg='You must choose either BE or PC. Try running the program again.')
     
@@ -337,8 +338,8 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                             if timeSinceShutOff > 5*60: # if sputtering off for 5 mins
                                 print 'shutting down program because shutofftimer exceeded (targets off for 5 mins)'
                                 expBasepath = 'Y:/Experiment Summaries/Year ' + str(datetime.now().year) + '/'
-                                expRunPath = exBasepath + '/' + 'S' + str(runNum).zfill(5) + '/'
-                                expRunPath = exBasepath + '/' + 'S' + str(runNum).zfill(5) + '/' + tool + ' OES data' 
+                                expRunPath = expBasepath + '/' + 'S' + str(runNum).zfill(5) + '/'
+                                expRunPath = expBasepath + '/' + 'S' + str(runNum).zfill(5) + '/' + tool + ' OES data' 
                                 for eachPath in [expBasepath,expRunPath,expOESpath]:
                                     if not os.path.exists(expRunPath):
                                         os.mkdir(expRunPath)
