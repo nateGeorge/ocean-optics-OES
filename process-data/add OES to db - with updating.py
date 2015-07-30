@@ -1,4 +1,5 @@
-import csv, os, sys, re, datetime, glob, dateutil.parser, time
+import csv, os, sys, re, glob, dateutil.parser, time
+from datetime import datetime
 sys.path.append('Y:/Nate/git/nuvosun-python-lib')
 import nuvosunlib as nsl
 # since I have to run from the C: drive now, need to change folders into the file directory for storage files
@@ -106,7 +107,7 @@ print ''
 print ''
 print '*******************************************************'
 print '*******************************************************'
-print 'starting db addition on', str(datetime.datetime.now())
+print 'starting db addition on', str(datetime.now())
 
 tool = 'MC02'
 
@@ -131,11 +132,11 @@ if os.path.isfile(OESdbFile):
     OESreader = csv.reader(open(OESdbFile,'rb'), delimiter =',')
     for row in OESreader:
         if not isWLrow:
-            currentRunNumber = int(re.search('00(\d\d\d)',row[1]).group(1))
+            currentRunNumber = int(re.search('0*(\d\d\d)',row[1]).group(1))
             if currentRunNumber not in runsInDB:
                 runsInDB.append(currentRunNumber)
-                fullOESstartDT = datetime.datetime.fromtimestamp(float(row[4])).strftime('%m-%d-%y')
-                oldOESstartDate = datetime.datetime.strptime(fullOESstartDT,'%m-%d-%y')
+                fullOESstartDT = datetime.fromtimestamp(float(row[4])).strftime('%m-%d-%y')
+                oldOESstartDate = datetime.strptime(fullOESstartDT,'%m-%d-%y')
                 runDatesInDB.append(oldOESstartDate)
                 runsInDBdict[currentRunNumber] = {}
                 runsInDBdict[currentRunNumber]['start date'] = oldOESstartDate
@@ -181,7 +182,7 @@ for folder in sorted(OESfolders.keys()):
             if not firstRow:
                 #ZoneOESdata[zone].append(row[1:])
                 #ZoneOESdates[zone].append((dateutil.parser.parse(row[0])-datetime.datetime(1970,1,1)).total_seconds())
-                currentDatetime = (dateutil.parser.parse(row[0])-datetime.datetime(1970,1,1)).total_seconds()
+                currentDatetime = (dateutil.parser.parse(row[0])-datetime(1970,1,1)).total_seconds()
                 currentData = row[1:]
                 csvDataWriter.writerow([tool,currentRun,process,zone,currentDatetime] + currentData)
                 
