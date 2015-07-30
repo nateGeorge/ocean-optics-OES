@@ -96,7 +96,7 @@ def copyOESdata(savedir, runNum):
     '''
     expBasepath = 'Y:/Experiment Summaries/Year ' + str(datetime.now().year) + '/'
     expRunPath = basepath + '\\' + 'S' + str(runNum).zfill(5) + '\\'
-    expRunPath = basepath + '\\' + 'S' + str(runNum).zfill(5) + '\\' + tool + ' OES data' 
+    expOESPath = basepath + '\\' + 'S' + str(runNum).zfill(5) + '\\' + tool + ' OES data' 
     for eachPath in [expBasepath,expRunPath,expOESpath]:
         if not os.path.exists(expRunPath):
             os.mkdir(expRunPath)
