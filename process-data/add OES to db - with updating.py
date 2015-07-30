@@ -50,7 +50,7 @@ def getRunNumber(filePath, OESstartDate, tool):
                 print 'found run ' + run + ' on date ' + str(runDates[run]['PC Run'].keys()[1]) + ' matching OES start date of ' + str(OESstartDate)
     if not dateMatched:
         print 'no run date matched', filePath
-        return None, None, False
+        return None, None, False, None
     # get list of actual zones measured
     zoneList = {}
     for zone in tempZoneList:
@@ -67,7 +67,7 @@ def getRunNumber(filePath, OESstartDate, tool):
                 exit()
                 
     
-    return currentRun, zoneList, dateMatched
+    return currentRun, zoneList, dateMatched, process
 
 def getAllOESfolders(baseDataDir):
     '''
@@ -88,6 +88,10 @@ def getAllOESfolders(baseDataDir):
             else:
                 tool = 'MC02'
                 OESfolders[file]['tool'] = 'MC02'
+            if re.search('BE', file):
+                OESfolders[file]['process'] = 'BE'
+            elif re.search('PC', file):
+                OESfolders[file]['process'] = 'PC'
             #getRunNumber(filePath, OESstartDate, tool)
     return OESfolders
 
@@ -109,8 +113,6 @@ print '*******************************************************'
 print '*******************************************************'
 print 'starting db addition on', str(datetime.now())
 
-tool = 'MC02'
-
 # since wavelengths are always the same, just need to load them once
 haveWavelengths = False
 
@@ -127,36 +129,37 @@ runsInDB = []
 runDatesInDB = []
 runsInDBFile = basePath + 'runsInDB.pkl'
 latestModDateFile = basePath + 'DBlatestMod.pkl'
+noLabelRow = True # used later to determine if need to write label row is csv database
 
-if os.path.isfile(latestModDateFile):
+DBrunListUptoDate = False
+if os.path.isfile(OESdbFile):
     latestDBmodDate = os.path.getmtime(OESdbFile)
-    with open(latestModDateFile) as pklFile:
-        prevDBmodDate = pkl.load(pklFile)
-    if latestDBmodDate == prevDBmodDate:
-        DBrunListUptoDate = True
+    if os.path.isfile(latestModDateFile):
+        with open(latestModDateFile) as pklFile:
+            prevDBmodDate = pkl.load(pklFile)
+        if latestDBmodDate == prevDBmodDate:
+            DBrunListUptoDate = True
     else:
-        DBrunListUptoDate = False
         with open(latestModDateFile,'wb') as pklFile:
             pkl.dump(latestDBmodDate, pklFile)
 
-noLabelRow = True # used later to determine if need to write label row is csv database
-if os.path.isfile(OESdbFile):
-    print 'getting runs already in DB...'
-    OESreader = csv.reader(open(OESdbFile,'rb'), delimiter =',')
-    for row in OESreader:
-        if not isWLrow:
-            currentRunNumber = int(re.search('0*(\d\d\d)',row[1]).group(1))
-            if currentRunNumber not in runsInDB:
-                runsInDB.append(currentRunNumber)
-                fullOESstartDT = datetime.fromtimestamp(float(row[4])).strftime('%m-%d-%y')
-                oldOESstartDate = datetime.strptime(fullOESstartDT,'%m-%d-%y')
-                runDatesInDB.append(oldOESstartDate)
-                runsInDBdict[currentRunNumber] = {}
-                runsInDBdict[currentRunNumber]['start date'] = oldOESstartDate
-        else:
-            isWLrow = False
-            pass
-print 'finished getting runs already in db'
+    if DBrunListUptoDate:
+        print 'getting runs already in DB...'
+        OESreader = csv.reader(open(OESdbFile,'rb'), delimiter =',')
+        for row in OESreader:
+            if not isWLrow:
+                currentRunNumber = int(re.search('0*(\d\d\d)',row[1]).group(1))
+                if currentRunNumber not in runsInDB:
+                    runsInDB.append(currentRunNumber)
+                    fullOESstartDT = datetime.fromtimestamp(float(row[4])).strftime('%m-%d-%y')
+                    oldOESstartDate = datetime.strptime(fullOESstartDT,'%m-%d-%y')
+                    runDatesInDB.append(oldOESstartDate)
+                    runsInDBdict[currentRunNumber] = {}
+                    runsInDBdict[currentRunNumber]['start date'] = oldOESstartDate
+            else:
+                isWLrow = False
+                pass
+    print 'finished getting runs already in db'
 
 if len(runsInDB)>0:
     noLabelRow = False
@@ -167,7 +170,7 @@ else:
         if os.path.isfile(file):
             os.remove(file)
 
-print sorted(runsInDB)
+print 'runs already in DB:', sorted(runsInDB)
 
 csvDataWriter = csv.writer(open(OESdbFile,'a'), delimiter = ',')
 for folder in sorted(OESfolders.keys()):
@@ -177,7 +180,7 @@ for folder in sorted(OESfolders.keys()):
     if OESfolders[folder]['start date'] in runDatesInDB:
         print 'run date', OESfolders[folder]['start date'], 'already in OES database, skipping folder', folder
         continue
-    currentRun, zoneList, dateMatched = getRunNumber(OESfolders[folder]['path'], OESfolders[folder]['start date'], OESfolders[folder]['tool'])
+    currentRun, zoneList, dateMatched, process = getRunNumber(OESfolders[folder]['path'], OESfolders[folder]['start date'], OESfolders[folder]['tool'])
     if not dateMatched:
         print 'no run date matched', folder
         continue
@@ -185,7 +188,7 @@ for folder in sorted(OESfolders.keys()):
     ZoneOESdata = {}
     ZoneOESdates = {}
     for zone in zoneList:
-        ZfileSearch = '*' + zone + '*'
+        ZfileSearch = OESfolders[folder]['path'] + '/' + '*' + zone + '*'
         for f in glob.iglob(ZfileSearch):
             Zfile = f
 
@@ -198,9 +201,12 @@ for folder in sorted(OESfolders.keys()):
             if not firstRow:
                 #ZoneOESdata[zone].append(row[1:])
                 #ZoneOESdates[zone].append((dateutil.parser.parse(row[0])-datetime.datetime(1970,1,1)).total_seconds())
-                currentDatetime = (dateutil.parser.parse(row[0])-datetime(1970,1,1)).total_seconds()
+                try:
+                    currentDatetime = (dateutil.parser.parse(row[0])-datetime(1970,1,1)).total_seconds()
+                except ValueError:
+                    currentDatetime = (datetime.strptime(row[0],'%m/%d/%y %H:%M:%S %p')-datetime(1970,1,1)).total_seconds()
                 currentData = row[1:]
-                csvDataWriter.writerow([tool,currentRun,process,zone,currentDatetime] + currentData)
+                csvDataWriter.writerow([OESfolders[folder]['tool'],currentRun,process,zone,currentDatetime] + currentData)
                 
                 #cur.execute('INSERT INTO TABLE OESspectra VALUES(%s)', [tool, currentRun, process, zone, currentDatetime, currentData]) % '?,'*(5+len(wl))[:-1]
             else:
