@@ -7,6 +7,7 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 def getRunNumber(filePath, OESstartDate, tool):
     '''
     Returns run number for a given OES file path.
+    must run runDates = nsl.getRunDates() first
     '''
     
     OESfiles = os.listdir(filePath)
@@ -48,7 +49,7 @@ def getRunNumber(filePath, OESstartDate, tool):
                 print 'found run ' + run + ' on date ' + str(runDates[run]['PC Run'].keys()[1]) + ' matching OES start date of ' + str(OESstartDate)
     if not dateMatched:
         print 'no run date matched', filePath
-        return None, None
+        return None, None, False
     # get list of actual zones measured
     zoneList = {}
     for zone in tempZoneList:
@@ -126,84 +127,78 @@ runDatesInDB = []
 
 noLabelRow = True # used later to determine if need to write label row is csv database
 if os.path.isfile(OESdbFile):
-	print 'getting runs already in DB...'
-	OESreader = csv.reader(open(OESdbFile,'rb'), delimiter =',')
-	for row in OESreader:
-		if not isWLrow:
-			currentRunNumber = int(re.search('00(\d\d\d)',row[1]).group(1))
-			if currentRunNumber not in runsInDB:
-				runsInDB.append(currentRunNumber)
-				fullOESstartDT = datetime.datetime.fromtimestamp(float(row[4])).strftime('%m-%d-%y')
-				oldOESstartDate = datetime.datetime.strptime(fullOESstartDT,'%m-%d-%y')
-				runDatesInDB.append(oldOESstartDate)
-				runsInDBdict[currentRunNumber] = {}
-				runsInDBdict[currentRunNumber]['start date'] = oldOESstartDate
-		else:
-			isWLrow = False
-			pass
+    print 'getting runs already in DB...'
+    OESreader = csv.reader(open(OESdbFile,'rb'), delimiter =',')
+    for row in OESreader:
+        if not isWLrow:
+            currentRunNumber = int(re.search('00(\d\d\d)',row[1]).group(1))
+            if currentRunNumber not in runsInDB:
+                runsInDB.append(currentRunNumber)
+                fullOESstartDT = datetime.datetime.fromtimestamp(float(row[4])).strftime('%m-%d-%y')
+                oldOESstartDate = datetime.datetime.strptime(fullOESstartDT,'%m-%d-%y')
+                runDatesInDB.append(oldOESstartDate)
+                runsInDBdict[currentRunNumber] = {}
+                runsInDBdict[currentRunNumber]['start date'] = oldOESstartDate
+        else:
+            isWLrow = False
+            pass
 print 'finished getting runs already in db'
 
 if len(runsInDB)>0:
-	noLabelRow = False
+    noLabelRow = False
 else:
-	if os.path.isfile(OESdbFile):
-		os.remove(OESdbFile)
+    if os.path.isfile(OESdbFile):
+        os.remove(OESdbFile)
 
 print sorted(runsInDB)
 
 csvDataWriter = csv.writer(open(OESdbFile,'a'), delimiter = ',')
 for folder in sorted(OESfolders.keys()):
-	print ''
-	print 'processing', OESfolders[folder]['path']
-	# get date of run and convert to datetime--don't think I need this anymore
-	'''if re.search('\d\d-\d\d-\d\d',folder):
-		OESstartDate = re.search('\d\d-\d\d-\d\d',folder).group(0)
-		OESstartDate = datetime.datetime.strptime(OESstartDate, '%m-%d-%y')
-	else:
-		print folder, 'is not an OES folder'
-		continue'''
-	if OESfolders[folder]['start date'] in runDatesInDB:
-		print 'run date', OESfolders[folder]['start date'], 'already in OES database, skipping folder', folder
-		continue
+    print ''
+    print 'processing', OESfolders[folder]['path']
+    # get date of run and convert to datetime--don't think I need this anymore
+    if OESfolders[folder]['start date'] in runDatesInDB:
+        print 'run date', OESfolders[folder]['start date'], 'already in OES database, skipping folder', folder
+        continue
     currentRun, zoneList, dateMatched = getRunNumber(OESfolders[folder]['path'], OESfolders[folder]['start date'], OESfolders[folder]['tool'])
-	if not dateMatched:
-		print 'no run date matched', folder
-		continue
-	# load raw OES spectra
-	ZoneOESdata = {}
-	ZoneOESdates = {}
-	for zone in zoneList:
-		ZfileSearch = '*' + zone + '*'
-		for f in glob.iglob(ZfileSearch):
-			Zfile = f
+    if not dateMatched:
+        print 'no run date matched', folder
+        continue
+    # load raw OES spectra
+    ZoneOESdata = {}
+    ZoneOESdates = {}
+    for zone in zoneList:
+        ZfileSearch = '*' + zone + '*'
+        for f in glob.iglob(ZfileSearch):
+            Zfile = f
 
-		ZOESCSV = csv.reader(open(Zfile,'rb'), delimiter=',')
+        ZOESCSV = csv.reader(open(Zfile,'rb'), delimiter=',')
 
-		firstRow = True
-		ZoneOESdata[zone] = []
-		ZoneOESdates[zone] = []
-		for row in ZOESCSV:
-			if not firstRow:
-				#ZoneOESdata[zone].append(row[1:])
-				#ZoneOESdates[zone].append((dateutil.parser.parse(row[0])-datetime.datetime(1970,1,1)).total_seconds())
-				currentDatetime = (dateutil.parser.parse(row[0])-datetime.datetime(1970,1,1)).total_seconds()
-				currentData = row[1:]
-				csvDataWriter.writerow([tool,currentRun,process,zone,currentDatetime] + currentData)
-				
-				#cur.execute('INSERT INTO TABLE OESspectra VALUES(%s)', [tool, currentRun, process, zone, currentDatetime, currentData]) % '?,'*(5+len(wl))[:-1]
-			else:
-				firstRow = False
-				if not haveWavelengths:
-					wl = row[1:]
-					haveWavelengths = True
-					if noLabelRow:
-						csvDataWriter.writerow(['tool','substrate','process','zone','datetime'] + wl)
-					'''print "CREATE TABLE IF NOT EXISTS OESspectra (tool TEXT, substrate INT, process TEXT, zone TEXT, datetime TEXT, %s)" % (' REAL, '.join('wl' + str(i) for i in range(len(wl)-2040)) + ' REAL')
-					exStr = "CREATE TABLE IF NOT EXISTS OESspectra (tool TEXT, substrate INT, process TEXT, zone TEXT, datetime TEXT, %s)" % (' REAL, '.join('wl' + str(i) for i in range(len(wl))) + ' REAL')
-					cur.execute(exStr)
-					cur.execute("CREATE TABLE IF NOT EXISTS OESwavelengths (%s)") % (' REAL, '.join(str(i) for i in range(len(wl))) + ' REAL')
-					cur.execute("INSERT INTO OESwavelengths VALUES (%s)",wl) % '?,'*(len(wl))[:-1]'''
-					
+        firstRow = True
+        ZoneOESdata[zone] = []
+        ZoneOESdates[zone] = []
+        for row in ZOESCSV:
+            if not firstRow:
+                #ZoneOESdata[zone].append(row[1:])
+                #ZoneOESdates[zone].append((dateutil.parser.parse(row[0])-datetime.datetime(1970,1,1)).total_seconds())
+                currentDatetime = (dateutil.parser.parse(row[0])-datetime.datetime(1970,1,1)).total_seconds()
+                currentData = row[1:]
+                csvDataWriter.writerow([tool,currentRun,process,zone,currentDatetime] + currentData)
+                
+                #cur.execute('INSERT INTO TABLE OESspectra VALUES(%s)', [tool, currentRun, process, zone, currentDatetime, currentData]) % '?,'*(5+len(wl))[:-1]
+            else:
+                firstRow = False
+                if not haveWavelengths:
+                    wl = row[1:]
+                    haveWavelengths = True
+                    if noLabelRow:
+                        csvDataWriter.writerow(['tool','substrate','process','zone','datetime'] + wl)
+                    '''print "CREATE TABLE IF NOT EXISTS OESspectra (tool TEXT, substrate INT, process TEXT, zone TEXT, datetime TEXT, %s)" % (' REAL, '.join('wl' + str(i) for i in range(len(wl)-2040)) + ' REAL')
+                    exStr = "CREATE TABLE IF NOT EXISTS OESspectra (tool TEXT, substrate INT, process TEXT, zone TEXT, datetime TEXT, %s)" % (' REAL, '.join('wl' + str(i) for i in range(len(wl))) + ' REAL')
+                    cur.execute(exStr)
+                    cur.execute("CREATE TABLE IF NOT EXISTS OESwavelengths (%s)") % (' REAL, '.join(str(i) for i in range(len(wl))) + ' REAL')
+                    cur.execute("INSERT INTO OESwavelengths VALUES (%s)",wl) % '?,'*(len(wl))[:-1]'''
+                    
 endTime = time.time()
 
 print 'took', endTime - startTime, 'seconds'
