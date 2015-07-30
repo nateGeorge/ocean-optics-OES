@@ -1,5 +1,6 @@
 import csv, os, sys, re, glob, dateutil.parser, time
 from datetime import datetime
+import pickle as pkl
 sys.path.append('Y:/Nate/git/nuvosun-python-lib')
 import nuvosunlib as nsl
 # since I have to run from the C: drive now, need to change folders into the file directory for storage files
@@ -8,9 +9,8 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 def getRunNumber(filePath, OESstartDate, tool):
     '''
     Returns run number for a given OES file path.
-    must run runDates = nsl.getRunDates() first
     '''
-    
+    runDates = nsl.getRunDates(bywebID = False)
     OESfiles = os.listdir(filePath)
     for file in OESfiles:
         if re.search('1B',file):
@@ -125,6 +125,19 @@ isWLrow = True
 runsInDBdict = {}
 runsInDB = []
 runDatesInDB = []
+runsInDBFile = basePath + 'runsInDB.pkl'
+latestModDateFile = basePath + 'DBlatestMod.pkl'
+
+if os.path.isfile(latestModDateFile):
+    latestDBmodDate = os.path.getmtime(OESdbFile)
+    with open(latestModDateFile) as pklFile:
+        prevDBmodDate = pkl.load(pklFile)
+    if latestDBmodDate == prevDBmodDate:
+        DBrunListUptoDate = True
+    else:
+        DBrunListUptoDate = False
+        with open(latestModDateFile,'wb') as pklFile:
+        pkl.dump(latestDBmodDate, pklFile)
 
 noLabelRow = True # used later to determine if need to write label row is csv database
 if os.path.isfile(OESdbFile):
@@ -147,9 +160,12 @@ print 'finished getting runs already in db'
 
 if len(runsInDB)>0:
     noLabelRow = False
+    with open(runsInDBFile,'wb') as pklFile:
+        pkl.dump(runsInDB, pklFile)
 else:
-    if os.path.isfile(OESdbFile):
-        os.remove(OESdbFile)
+    for file in [OESdbFile, latestModDateFile, runsInDBFile]:
+        if os.path.isfile(file):
+            os.remove(file)
 
 print sorted(runsInDB)
 
