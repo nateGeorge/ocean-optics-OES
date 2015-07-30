@@ -137,7 +137,7 @@ if os.path.isfile(latestModDateFile):
     else:
         DBrunListUptoDate = False
         with open(latestModDateFile,'wb') as pklFile:
-        pkl.dump(latestDBmodDate, pklFile)
+            pkl.dump(latestDBmodDate, pklFile)
 
 noLabelRow = True # used later to determine if need to write label row is csv database
 if os.path.isfile(OESdbFile):
