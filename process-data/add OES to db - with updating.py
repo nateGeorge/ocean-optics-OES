@@ -1,15 +1,94 @@
 import csv, os, sys, re, datetime, glob, dateutil.parser, time
 sys.path.append('Y:/Nate/git/nuvosun-python-lib')
 import nuvosunlib as nsl
-
 # since I have to run from the C: drive now, need to change folders into the file directory for storage files
 os.chdir(os.path.dirname(os.path.realpath(__file__))) 
 
-'''import sqlite3
+def getRunNumber(filePath, OESstartDate, tool):
+    '''
+    Returns run number for a given OES file path.
+    '''
+    
+    OESfiles = os.listdir(filePath)
+    for file in OESfiles:
+        if re.search('1B',file):
+            print 'detected \'1B\' in file ' + file + ', labeling BE'
+            BEprocess = True
+            PCprocess = False
+            process = 'BE'
+            tempZoneList = ['1B','2B','3B','4B']
+        elif re.search('5A',file):
+            print 'detected \'5A\' in file ' + file + ', labeling PC'
+            PCprocess = True
+            BEprocess = False
+            process = 'PC'
+            tempZoneList = ['5A','5B','6A','6B']
+    # get run number from list of run dates
+    dateMatched = False
+    for run in runDates:
+        if BEprocess:
+            BEdates = []
+            for key in runDates[run]['BE Run'].keys():
+                if key != 'DW range':
+                    BEdates.append(datetime.strftime(key,'%m-%d-%y'))
+            #print BEdates, OESstartDate, runDates[run]['BE Tool'], tool
+            if OESstartDate in runDates[run]['BE Run'].keys() and runDates[run]['BE Tool'] == tool:
+                currentRun = run
+                dateMatched = True
+                print 'found run ' + run + ' on date ' + str(runDates[run]['BE Run'].keys()[1]) + ' matching OES start date of ' + str(OESstartDate)
+        elif PCprocess:
+            PCdates = []
+            for key in runDates[run]['PC Run'].keys():
+                if key != 'DW range':
+                    PCdates.append(datetime.strftime(key,'%m-%d-%y'))
+            #print PCdates, OESstartDate, runDates[run]['PC Tool'], tool
+            if OESstartDate in runDates[run]['BE Run'].keys() and runDates[run]['PC Tool'] == tool:
+                currentRun = run
+                dateMatched = True
+                print 'found run ' + run + ' on date ' + str(runDates[run]['PC Run'].keys()[1]) + ' matching OES start date of ' + str(OESstartDate)
+    if not dateMatched:
+        print 'no run date matched', filePath
+        return None, None
+    # get list of actual zones measured
+    zoneList = {}
+    for zone in tempZoneList:
+        ZfileSearch = '*' + zone + '*'
+        fCount = 0
+        for f in glob.iglob(filePath + '/' + ZfileSearch):
+            zoneList[zone] = f
+            fCount += 1
+            if fCount>1:
+                print currentRun, 'has more than 1 file'
+                print 'files:'
+                print os.listdir(filePath)
+                print 'file path:', filePath
+                exit()
+                
+    
+    return currentRun, zoneList, dateMatched
 
-con = sqlite3.connect('dbname=allOESdata user=postgres')
+def getAllOESfolders(baseDataDir):
+    '''
+    Returns list of all folders in OES directory, baseDataDir.
+    '''
+    OESfolders = {}
+    OESfiles = os.listdir(baseDataDir)
+    for file in OESfiles:
+        filePath = baseDataDir + file
+        if os.path.isdir(filePath):
+            OESfolders[file] = {}
+            OESfolders[file]['path'] = filePath
+            OESstartDate = re.search('\d\d-\d\d-\d\d', file).group(0)
+            OESfolders[file]['start date'] = datetime.strptime(OESstartDate, '%m-%d-%y')
+            if re.search('MC\d\d', file):
+                tool = re.search('MC\d\d', file).group(0)
+                OESfolders[file]['tool'] = tool
+            else:
+                tool = 'MC02'
+                OESfolders[file]['tool'] = 'MC02'
+            #getRunNumber(filePath, OESstartDate, tool)
+    return OESfolders
 
-cur = con.cursor()'''
 startTime = time.time()
 
 useLogFile = True # will write everything to the logfile instead of to console
@@ -36,19 +115,10 @@ haveWavelengths = False
 runDates = nsl.getRunDates()
 
 baseOESdataPath = 'Y:/Nate/new MC02 OES program/backup from MC02 computer/data/'
-	
-# get list of OES runs:
-folders = os.listdir(baseOESdataPath)
 
-print 'using folders:'
-for folder in folders:
-	print folder
+OESfolders = getAllOESfolders(baseOESdataPath)
 
 # check which data is already in database file
-
-
-
-
 isWLrow = True
 runsInDBdict = {}
 runsInDB = []
@@ -71,7 +141,7 @@ if os.path.isfile(OESdbFile):
 		else:
 			isWLrow = False
 			pass
-print 'finished getting runs'
+print 'finished getting runs already in db'
 
 if len(runsInDB)>0:
 	noLabelRow = False
@@ -82,53 +152,20 @@ else:
 print sorted(runsInDB)
 
 csvDataWriter = csv.writer(open(OESdbFile,'a'), delimiter = ',')
-for folder in folders:
+for folder in sorted(OESfolders.keys()):
 	print ''
-	print 'processing', folder
-	# get date of run and convert to datetime
-	if re.search('\d\d-\d\d-\d\d',folder):
+	print 'processing', OESfolders[folder]['path']
+	# get date of run and convert to datetime--don't think I need this anymore
+	'''if re.search('\d\d-\d\d-\d\d',folder):
 		OESstartDate = re.search('\d\d-\d\d-\d\d',folder).group(0)
 		OESstartDate = datetime.datetime.strptime(OESstartDate, '%m-%d-%y')
 	else:
 		print folder, 'is not an OES folder'
+		continue'''
+	if OESfolders[folder]['start date'] in runDatesInDB:
+		print 'run date', OESfolders[folder]['start date'], 'already in OES database, skipping folder', folder
 		continue
-	if OESstartDate in runDatesInDB:
-		print 'run date', str(OESstartDate), 'already in OES database, skipping folder', folder
-		continue
-	os.chdir(baseOESdataPath + folder)
-	# detect if is BE or PC process from zones listed in file names
-	OESfiles = os.listdir('.')
-	print 'OES files in folder are'
-	for file in OESfiles:
-		print file
-	for file in OESfiles:
-		if re.search('1B',file):
-			print 'detected \'1B\' in file ' + file + ', labeling BE'
-			BEprocess = True
-			PCprocess = False
-			process = 'BE'
-			zoneList = ['1B','2B','3B','4B']
-		elif re.search('5A',file):
-			print 'detected \'5A\' in file ' + file + ', labeling PC'
-			PCprocess = True
-			BEprocess = False
-			process = 'PC'
-			zoneList = ['5A','5B','6A','6B']
-	# get run number from list of run dates
-	dateMatched = False
-	for run in runDates:
-		if BEprocess:
-			#print runDates[run]['BE date'], OESstartDate
-			if runDates[run]['BE date'] == OESstartDate and runDates[run]['BE tool'] == tool:
-				currentRun = run
-				dateMatched = True
-				print 'found run ' + run + ' on date ' + str(runDates[run]['BE date']) + ' matching OES start date of ' + str(OESstartDate)
-		elif PCprocess:
-			#print runDates[run]['PC date'], OESstartDate
-			if runDates[run]['PC date'] == OESstartDate and runDates[run]['PC tool'] == tool:
-				currentRun = run
-				dateMatched = True
-				print 'found run ' + run + ' on date ' + str(runDates[run]['PC date']) + ' matching OES start date of ' + str(OESstartDate)
+    currentRun, zoneList, dateMatched = getRunNumber(OESfolders[folder]['path'], OESfolders[folder]['start date'], OESfolders[folder]['tool'])
 	if not dateMatched:
 		print 'no run date matched', folder
 		continue
