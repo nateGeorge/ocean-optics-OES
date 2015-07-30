@@ -1,5 +1,5 @@
 import csv, os, sys, re, datetime, glob, dateutil.parser, time
-sys.path.append('Y:/Nate/code/')
+sys.path.append('Y:/Nate/git/nuvosun-python-lib')
 import nuvosunlib as nsl
 
 # since I have to run from the C: drive now, need to change folders into the file directory for storage files
@@ -14,10 +14,10 @@ startTime = time.time()
 
 useLogFile = True # will write everything to the logfile instead of to console
 
+basePath = 'Y:/Nate/OES/databases/'
+OESdbFile = basePath + 'all OES data.csv'
 
-OESdbFile = 'all OES data.csv'
-
-logFile = open('add OES to db logfile.txt','a')
+logFile = open(basePath + 'add OES to db logfile.txt','a')
 
 sys.stdout = logFile
 sys.stderr = logFile
