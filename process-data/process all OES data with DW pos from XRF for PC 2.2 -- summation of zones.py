@@ -159,6 +159,7 @@ for row in OESreader:
                 initialize_OES_dicts()
                 if row[2] == 'PC':
                     if currentRunNumber in writtenPCruns:
+                        print 'skipping run', currentRunNumber, 'cause already in processed file'
                         continue
                     print 'adding', currentRunNumber, 'to PC runs'
                     PCruns[currentRunNumber] = {}
@@ -254,9 +255,3 @@ for proc in ['BE','PC']:
 
 
 nsl.set_saved_runsInprocessedOESDBList(PCruns.keys(), BEruns.keys(), OESDTDW)
-
-
-
-
-
-
