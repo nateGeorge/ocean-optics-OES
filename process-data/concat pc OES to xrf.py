@@ -48,10 +48,10 @@ for row in processedPCOESreader:
             if row[3] == 'all zones' and not atAllZones:
                 rowCounter = rowCounter - len(OESDTDW['PC'][currentRunNumber]['DT'])
                 atAllZones = True
-            print row[4]
+            '''print row[4]
             print min_maxXRFtimes[currentRunNumber]
             print float(row[4]) - min_maxXRFtimes[currentRunNumber]['min']
-            print min_maxXRFtimes[currentRunNumber]['max'] - float(row[4])
+            print min_maxXRFtimes[currentRunNumber]['max'] - float(row[4])'''
             if float(row[4]) >= min_maxXRFtimes[currentRunNumber]['min'] and float(row[4]) <= min_maxXRFtimes[currentRunNumber]['max']:
                 print 'within bounds'
                 OESpcProcData[currentRunNumber].append(
@@ -69,6 +69,7 @@ for row in processedPCOESreader:
 
 PCOEScsvWithDW = csv.writer(open(processedPCfile[:-4] + ' and XRF.csv', 'wb'), delimiter=',')
 PCOEScsvWithDW.writerow(labels)
+print OESpcProcData.keys()
 for run in OESpcProcData.keys():
     PCOEScsvWithDW.writerows(OESpcProcData[run])
             

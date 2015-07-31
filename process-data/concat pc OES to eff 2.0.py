@@ -26,6 +26,7 @@ for row in PCOEScsvWithDWreader:
 
 charKeys = ['substrate', 'zone', 'process', 'tool', 'datetime']
 
+print PCOESandXRFdata.keys()
 for count in range(len(PCOESandXRFdata['DW'])):
     run = PCOESandXRFdata['substrate'][count]
     zone = PCOESandXRFdata['zone'][count]
