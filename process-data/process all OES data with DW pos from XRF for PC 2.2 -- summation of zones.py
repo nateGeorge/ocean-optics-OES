@@ -82,6 +82,8 @@ def initialize_OES_dicts():
 
 processedBEfile = 'Y:/Nate/OES/databases/PROCESSED all OES data BE - with normalizations.csv'
 processedPCfile = 'Y:/Nate/OES/databases/PROCESSED all OES data PC - with normalizations.csv'
+basePath = 'Y:/Nate/OES/databases/'
+OESdbFile = basePath + 'all OES data.csv'
 
 processedPCUpToDate, processedBEUpToDate, writtenPCruns, writtenBEruns, oldOESDTDW = nsl.get_saved_runsInprocessedOESDBList()
 
@@ -106,7 +108,7 @@ PCzones = ['5A','5B','6A','6B']
 # check if we've already processed the most recent OES data
 
 
-OESreader = csv.reader(open('all OES data.csv', 'rb'), delimiter=',')
+OESreader = csv.reader(open(OESdbFile, 'rb'), delimiter=',')
 
 # write headers to BE file
 processedBEOEScsv = csv.writer(open(processedBEfile, 'wb'), delimiter=',')
