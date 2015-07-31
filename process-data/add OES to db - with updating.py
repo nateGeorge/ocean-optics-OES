@@ -29,21 +29,12 @@ def getRunNumber(filePath, OESstartDate, tool):
     dateMatched = False
     for run in runDates:
         if BEprocess:
-            BEdates = []
-            for key in runDates[run]['BE Run'].keys():
-                if key != 'DW range':
-                    BEdates.append(datetime.strftime(key,'%m-%d-%y'))
             #print BEdates, OESstartDate, runDates[run]['BE Tool'], tool
             if OESstartDate in runDates[run]['BE Run'].keys() and runDates[run]['BE Tool'] == tool:
                 currentRun = run
                 dateMatched = True
                 print 'found run ' + run + ' on date ' + str(runDates[run]['BE Run'].keys()[1]) + ' matching OES start date of ' + str(OESstartDate)
         elif PCprocess:
-            PCdates = []
-            for key in runDates[run]['PC Run'].keys():
-                if key != 'DW range':
-                    PCdates.append(datetime.strftime(key,'%m-%d-%y'))
-            #print PCdates, OESstartDate, runDates[run]['PC Tool'], tool
             if OESstartDate in runDates[run]['BE Run'].keys() and runDates[run]['PC Tool'] == tool:
                 currentRun = run
                 dateMatched = True
