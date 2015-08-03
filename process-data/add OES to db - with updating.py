@@ -91,7 +91,10 @@ startTime = time.time()
 useLogFile = True # will write everything to the logfile instead of to console
 
 basePath = 'Y:/Nate/OES/databases/'
+recordBasePath = 'Y:/Nate/OES/records/'
 OESdbFile = basePath + 'all OES data.csv'
+runsInDBFile = recordBasePath + 'runsInDB.pkl'
+latestModDateFile = recordBasePath + 'DBlatestMod.pkl'
 
 logFile = open(basePath + 'add OES to db logfile.txt','a')
 
@@ -118,8 +121,6 @@ isWLrow = True
 runsInDBdict = {}
 runsInDB = []
 runDatesInDB = []
-runsInDBFile = basePath + 'runsInDB.pkl'
-latestModDateFile = basePath + 'DBlatestMod.pkl'
 noLabelRow = True # used later to determine if need to write label row is csv database
 
 DBrunListUptoDate = False
@@ -131,10 +132,11 @@ if os.path.isfile(OESdbFile):
         if latestDBmodDate == prevDBmodDate:
             DBrunListUptoDate = True
     else:
+        print 'saving latestModDateFile'
         with open(latestModDateFile,'wb') as pklFile:
             pkl.dump(latestDBmodDate, pklFile)
 
-    if DBrunListUptoDate:
+    if not DBrunListUptoDate:
         print 'getting runs already in DB...'
         OESreader = csv.reader(open(OESdbFile,'rb'), delimiter =',')
         for row in OESreader:
