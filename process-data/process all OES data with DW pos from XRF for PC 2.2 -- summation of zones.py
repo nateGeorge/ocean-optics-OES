@@ -10,7 +10,7 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 def write_OES_data(OESdetails):
     '''
-    
+    Returns nothing, writes OESdata to oes DB as name implies.
     
     :param: OESdetails -- array of the first three columns from the allOESdata csv, which is tool, substrate, process.
     '''
@@ -76,7 +76,6 @@ def initialize_OES_dicts():
     for key in keysToAdd:
         normalizedDataSums[key] = []
 
-
 # sys.stdout = open('OES processessing log file.txt','wb')
 # sys.stderr = open('OES processessing err file.txt','wb')
 
@@ -104,10 +103,7 @@ for key in removeKeys:
 BEzones = ['1B','2B','3B','4B']
 PCzones = ['5A','5B','6A','6B']
 
-
 # check if we've already processed the most recent OES data
-
-
 OESreader = csv.reader(open(OESdbFile, 'rb'), delimiter=',')
 
 # write headers to BE file
