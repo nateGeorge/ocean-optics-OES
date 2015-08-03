@@ -10,7 +10,7 @@ def getRunNumber(filePath, OESstartDate, tool):
     '''
     Returns run number for a given OES file path.
     '''
-    runDates = nsl.getRunDates(bywebID = False)
+    runDates = nsl.getRunDates(bywebID=False, verbose=False)
     OESfiles = os.listdir(filePath)
     for file in OESfiles:
         if re.search('1B',file):
@@ -29,13 +29,13 @@ def getRunNumber(filePath, OESstartDate, tool):
     dateMatched = False
     for run in runDates:
         if BEprocess:
-            #print BEdates, OESstartDate, runDates[run]['BE Tool'], tool
+            #print OESstartDate, runDates[run]['BE Tool'], tool
             if OESstartDate in runDates[run]['BE Run'].keys() and runDates[run]['BE Tool'] == tool:
                 currentRun = run
                 dateMatched = True
                 print 'found run ' + run + ' on date ' + str(runDates[run]['BE Run'].keys()[1]) + ' matching OES start date of ' + str(OESstartDate)
         elif PCprocess:
-            if OESstartDate in runDates[run]['BE Run'].keys() and runDates[run]['PC Tool'] == tool:
+            if OESstartDate in runDates[run]['PC Run'].keys() and runDates[run]['PC Tool'] == tool:
                 currentRun = run
                 dateMatched = True
                 print 'found run ' + run + ' on date ' + str(runDates[run]['PC Run'].keys()[1]) + ' matching OES start date of ' + str(OESstartDate)
