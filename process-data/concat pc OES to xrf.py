@@ -13,7 +13,7 @@ processedPCfile = 'Y:/Nate/OES/databases/PROCESSED all OES data PC - with normal
 processedBEfile = 'Y:/Nate/OES/databases/PROCESSED all OES data BE - with normalizations.csv'
 
 processedPCUpToDate, processedBEUpToDate, writtenPCruns, writtenBEruns, OESDTDW = nsl.get_saved_runsInprocessedOESDBList()
-
+print sorted(writtenPCruns)
 XRFdata = nsl.get_XRF_data(sorted(writtenPCruns),minDW=-15.0)
 
 XRFkeysToInterp = sorted(XRFdata[XRFdata.keys()[0]].keys())
