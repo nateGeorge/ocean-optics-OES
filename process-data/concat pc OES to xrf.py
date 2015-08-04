@@ -53,7 +53,7 @@ for row in processedPCOESreader:
             print float(row[4]) - min_maxXRFtimes[currentRunNumber]['min']
             print min_maxXRFtimes[currentRunNumber]['max'] - float(row[4])'''
             if float(row[4]) >= min_maxXRFtimes[currentRunNumber]['min'] and float(row[4]) <= min_maxXRFtimes[currentRunNumber]['max']:
-                print 'within bounds'
+                #print 'within bounds'
                 OESpcProcData[currentRunNumber].append(
                 row + [OESDTDW['PC'][currentRunNumber][key][rowCounter] for key in XRFkeysToInterp])
         except IndexError:
