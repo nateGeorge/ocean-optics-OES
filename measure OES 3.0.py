@@ -37,9 +37,13 @@ import pylab as plt
 import matplotlib.dates as mdates
 sys.path.append("Y:/Nate/git/nuvosun-python-lib/")
 import nuvosunlib as nsl
+from pymongo import MongoClient
 
-
-# connect to sqlite DB and get cursor
+# connect to mongoDB and get cursor
+MONGODB_HOST = 'localhost'
+MONGODB_PORT = 27017
+DBS_NAME = 'OES_DB'
+connection = MongoClient(MONGODB_HOST, MONGODB_PORT)
 
 plotOESfile = 'C:/OESdata/plot OES 3.1.py'
 autoBackupfile = 'C:/OESdata/auto backup files, read schedule and start measurements.py'
@@ -83,15 +87,15 @@ if process == 'BE':
     sumZoneList = []
     procIntTime = BEintTime * 1000000 # convert to microseconds
     procNumScans = BEnumScans
-    dataBase = sq.connect('C:/OESdata/allBEOESData.db')
-    curse = dataBase.cursor()
+    COLLECTION_NAME = 'BEdata'
+    collection = connection[DBS_NAME][COLLECTION_NAME] 
 elif process == 'PC':
     zoneList = PCzoneList
     sumZoneList = ['5A + 5B', 'zones 5 + 6']
     procIntTime = PCintTime * 1000000 # convert to microseconds
     procNumScans = PCnumScans
-    dataBase = sq.connect('C:/OESdata/allPCOESData.db')
-    curse = dataBase.cursor()
+    COLLECTION_NAME = 'PCdata'
+    collection = connection[DBS_NAME][COLLECTION_NAME] 
 else:
     eg.msgbox(msg='You must choose either BE or PC. Try running the program again.')
     
@@ -261,11 +265,6 @@ def prepare_for_OES_measurements(savedir, savedate):
                     print zoneList[each] + ' raw spectra file (' + savedir + savedate + ' -- ' + zoneList[each] + ' OES raw spectra.csv' + ') is open another program, please close it'
                     print '*****************\n'
                     time.sleep(5)
-                    
-    # create sqlite DB if not already existing
-    
-    exstr = '(tool TEXT, datetime TEXT, ' + ', '.join(['\"' + e + '\"' + ' REAL' for e in combinedList]) + ')'
-    curse.execute("CREATE TABLE IF NOT EXISTS oesdata " + exstr)
         
     # start OES integrated signals file and save labels on first row (if doesn't already exist)
     if os.path.isfile(savedir + savedate + ' -- OES signals.csv'):
@@ -381,11 +380,13 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                         OESdataDict['zones 5 + 6'][element] = OESdataDict['5A'][element] + OESdataDict['5B'][element] + OESdataDict['6A'][element] + OESdataDict['6B'][element]
                     OESdataDict['zones 5 + 6']['DT'] = OESdataDict['6B']['DT']
         
-        # save integration data to sqlite database
-        qs = '?, '*(len(combinedList) + 2)
+        # save integration data to mongoDB
+        '''qs = '?, '*(len(combinedList) + 2)
         exStr = 'INSERT INTO oesdata VALUES (' + qs[:-2] + ')'
         curse.execute(exStr, [tool] + [OESdataDict[zone]['DT']]+[OESdataDict[zone][element] for zone in (zoneList + sumZoneList) for element in measuredElementList])
-        dataBase.commit()
+        dataBase.commit()'''
+        OESdataDict['tool'] = tool
+        collection.insert(OESdataDict)
         # opens file to save OES integrated data, but checks if it is open elsewhere first and warns user
         notWritten = True
         while notWritten:
