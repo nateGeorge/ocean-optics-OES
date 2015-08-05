@@ -243,7 +243,7 @@ def plotdata(*args):
         
         legend = eval('ax' + zoneList[0]).legend(bbox_to_anchor=(0.2, 1.1), loc='upper right', borderaxespad=0., shadow=True, labelspacing=0, numpoints=1)
         frame = legend.get_frame()
-        frame.set_facecolor('0.90')
+        frame.set_facecolor('1')
         
         fig.canvas.set_window_title('OES zones ' + zoneList[0] + ' - ' + zoneList[-1])
         
