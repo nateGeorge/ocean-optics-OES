@@ -235,12 +235,17 @@ def plotdata(*args):
             axCu3.plot_date(OESdates, OESdataDict['oesCu3'], color = 'yellow')
             axCu3.set_ylabel('Cu3 from OES', color = 'w')
             axCu3.grid(color='w', linewidth=2)
-            plt.figtext(0.75,0.3,'Current OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-1])*1000)/1000.0),fontsize=16,color='white')
-            if len(OESdataDict['oesCu3']) > 3:
+            plt.figtext(0.6,0.34,'Cu3: ' + str(int(float(OESdataDict['oesCu3'][-1])*1000)/1000.0),fontsize=16,color='white')
+            if len(OESdataDict['oesCu3']) > 7:
                 # I'm sure there's an easier way to round, but it's the end of a 16 hour day and I don't care
-                plt.figtext(0.75,0.25,'OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-2])*1000)/1000.0),fontsize=16,color='white')
-                plt.figtext(0.75,0.2,'OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-3])*1000)/1000.0),fontsize=16,color='white')
-                plt.figtext(0.75,0.15,'older OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-4])*1000)/1000.0),fontsize=16,color='white')
+                plt.figtext(0.6,0.31,'OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-2])*1000)/1000.0),fontsize=16,color='white')
+                plt.figtext(0.6,0.28,'OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-3])*1000)/1000.0),fontsize=16,color='white')
+                plt.figtext(0.6,0.25,'OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-4])*1000)/1000.0),fontsize=16,color='white')
+                plt.figtext(0.6,0.22,'OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-5])*1000)/1000.0),fontsize=16,color='white')
+                plt.figtext(0.6,0.19,'OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-6])*1000)/1000.0),fontsize=16,color='white')
+                plt.figtext(0.6,0.16,'OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-7])*1000)/1000.0),fontsize=16,color='white')
+                plt.figtext(0.6,0.13,'OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-8])*1000)/1000.0),fontsize=16,color='white')
+                plt.figtext(0.6,0.10,'newest OES Cu3 at top ^',fontsize=16,color='white')
         
         eval('ax' + zoneList[0]).set_ylabel('OES integrated intensity', color='w')
         if process == 'BE':
