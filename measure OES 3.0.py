@@ -38,6 +38,9 @@ import matplotlib.dates as mdates
 sys.path.append("Y:/Nate/git/nuvosun-python-lib/")
 import nuvosunlib as nsl
 
+# option to add in normalization by argon
+enableArNormalize = False
+
 # option for summing Z5-6, Z5A+Z5B
 # enabling will require restructuring the database
 calcSumOfZones = False
@@ -242,7 +245,16 @@ def prepare_for_OES_measurements(savedir, savedate):
 
 
     # make list of elements and zones measured
-    measuredElementList = elementList + normalizationKeys#use this: ['Cu', 'In', 'Ga', 'Ar', 'O2', 'H2'] to restrict list as needed
+    normKeys = []
+    for key in normalizationKeys:
+        if element[-2:] == 'Fi':
+            normKeys.append(key)
+        # not doing normalization by argon anymore, you will have to rebuild the database if you want to add this back in
+        elif element[-6:] == 'Ar-811' and enableArNormalize:
+            normKeys.append(key)
+        elif element[-11:] == '(Fi*Ar-811)' enableArNormalize:
+            normKeys.append(key)
+    measuredElementList = elementList + normKeys#use this: ['Cu', 'In', 'Ga', 'Ar', 'O2', 'H2'] to restrict list as needed
     combinedList = [zone + ' ' + element for zone in (fullZoneList) for element in measuredElementList] #Combines list like 5A Cu, 5A In, etc...
     OESdataDict={}
     for zone in fullZoneList:
@@ -316,11 +328,11 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                 if element[-2:] == 'Fi':
                     OESdataDict[zone][element] = (OESdataDict[zone][element[:-3]] / OESdataDict[zone]['Fi'])
                 # not doing normalization by argon anymore, you will have to rebuild the database if you want to add this back in
-                '''elif element[-6:] == 'Ar-811':
+                elif element[-6:] == 'Ar-811' and enableArNormalize:
                     OESdataDict[zone][element] = (OESdataDict[zone][element[:-7]] / OESdataDict[zone]['Ar-811'])
-                elif element[-11:] == '(Fi*Ar-811)':
+                elif element[-11:] == '(Fi*Ar-811)' enableArNormalize:
                     OESdataDict[zone][element] = (OESdataDict[zone][element[:-12]] / (
-                        OESdataDict[zone]['Fi'] * OESdataDict[zone]['Ar-811']))'''
+                        OESdataDict[zone]['Fi'] * OESdataDict[zone]['Ar-811']))
             else:
                 # integrates raw OES spectrum
                 OESdataDict[zone][element] = integrate.simps(rawOESspectrum[OESmaxMins[element+'MIN']:OESmaxMins[element+'MAX']],wl[OESmaxMins[element+'MIN']:OESmaxMins[element+'MAX']])
