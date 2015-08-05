@@ -235,11 +235,12 @@ def plotdata(*args):
             axCu3.plot_date(OESdates, OESdataDict['oesCu3'], color = 'yellow')
             axCu3.set_ylabel('Cu3 from OES', color = 'w')
             axCu3.grid(color='w', linewidth=2)
-            plt.figtext(0.6,0.1,'Current OES Cu3: ' + OESdataDict['oesCu3'][-1],fontsize=12,color='white')
+            plt.figtext(0.6,0.06,'Current OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-1])*1000)/1000),fontsize=12,color='white')
             if len(OESdataDict['oesCu3']) > 3:
-                plt.figtext(0.6,0.08,'OES Cu3: ' + OESdataDict['oesCu3'][-1],fontsize=12,color='white')
-                plt.figtext(0.6,0.06,'OES Cu3: ' + OESdataDict['oesCu3'][-1],fontsize=12,color='white')
-                plt.figtext(0.6,0.04,'older OES Cu3: ' + OESdataDict['oesCu3'][-1],fontsize=12,color='white')
+                # I'm sure there's an easier way to round, but it's the end of a 16 hour day and I don't care
+                plt.figtext(0.6,0.04,'OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-2])*1000)/1000),fontsize=12,color='white')
+                plt.figtext(0.6,0.02,'OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-3])*1000)/1000),fontsize=12,color='white')
+                plt.figtext(0.6,0,'older OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-4])*1000)/1000),fontsize=12,color='white')
         
         eval('ax' + zoneList[0]).set_ylabel('OES integrated intensity', color='w')
         if process == 'BE':
