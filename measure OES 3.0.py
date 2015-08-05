@@ -41,14 +41,6 @@ import nuvosunlib as nsl
 # option to add in normalization by argon
 enableArNormalize = False
 
-# option for summing Z5-6, Z5A+Z5B
-# enabling will require restructuring the database
-calcSumOfZones = False
-if calcSumOfZones:
-    fullZoneList = zoneList + sumZoneList
-else:
-    fullZoneList = zoneList
-
 # connect to sqlite DB and get cursor
 
 plotOESfile = 'C:/OESdata/plot OES 3.1.py'
@@ -108,6 +100,13 @@ else:
 ArMinIndex, ArMaxIndex = nsl.get_WL_indices(745.0, 760.0,
                                                     nsl.getOOWls())  # gets wl indices for ar peak to detect if plasma is on or not
 
+# option for summing Z5-6, Z5A+Z5B
+# enabling will require restructuring the database
+calcSumOfZones = False
+if calcSumOfZones:
+    fullZoneList = zoneList + sumZoneList
+else:
+    fullZoneList = zoneList
 
 def connect_to_multiplexer(comPort):
     # takes com port as a string, e.g. 'COM1'
@@ -251,7 +250,7 @@ def prepare_for_OES_measurements(savedir, savedate):
         # not doing normalization by argon anymore, you will have to rebuild the database if you want to add this back in
         elif element[-6:] == 'Ar-811' and enableArNormalize:
             normKeys.append(key)
-        elif element[-11:] == '(Fi*Ar-811)' enableArNormalize:
+        elif element[-11:] == '(Fi*Ar-811)' and enableArNormalize:
             normKeys.append(key)
     measuredElementList = elementList + normKeys#use this: ['Cu', 'In', 'Ga', 'Ar', 'O2', 'H2'] to restrict list as needed
     combinedList = [zone + ' ' + element for zone in (fullZoneList) for element in measuredElementList] #Combines list like 5A Cu, 5A In, etc...
@@ -320,7 +319,8 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
     
     # measures the OES spectra in each zone, and for each element.  appends the CSV files storing the data.
     for zone in zoneList:
-        OESdataDict[zone]['DT'], rawOESspectrum = measure_OES_spectrum(zoneToIndexMap[zone], darkInt)          
+        OESdataDict[zone]['DT'], rawOESspectrum = measure_OES_spectrum(zoneToIndexMap[zone], darkInt)
+        print zone, OESdataDict[zone]['DT']
         for element in measuredElementList:
             if re.search('/', element):
                 # calculate normalizations
@@ -329,7 +329,7 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                 # not doing normalization by argon anymore, you will have to rebuild the database if you want to add this back in
                 elif element[-6:] == 'Ar-811' and enableArNormalize:
                     OESdataDict[zone][element] = (OESdataDict[zone][element[:-7]] / OESdataDict[zone]['Ar-811'])
-                elif element[-11:] == '(Fi*Ar-811)' enableArNormalize:
+                elif element[-11:] == '(Fi*Ar-811)' and enableArNormalize:
                     OESdataDict[zone][element] = (OESdataDict[zone][element[:-12]] / (
                         OESdataDict[zone]['Fi'] * OESdataDict[zone]['Ar-811']))
             else:
@@ -337,6 +337,7 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                 OESdataDict[zone][element] = integrate.simps(rawOESspectrum[OESmaxMins[element+'MIN']:OESmaxMins[element+'MAX']],wl[OESmaxMins[element+'MIN']:OESmaxMins[element+'MAX']])
                 
                 # checks to see if machine has shut down (plasma is off).  once it is off for 3 minutes, stop measuring
+                # looks at 'Fi', or full intensity, of the plasma (integration of entire spectrum)
                 if element == 'Fi':
                     if OESdataDict[zone][element] >= 10000:
                         if not processStarted:
