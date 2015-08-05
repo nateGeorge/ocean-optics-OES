@@ -405,7 +405,7 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
         
         # save integration data to sqlite database
         qs = '?, '*(len(combinedList) + 2)
-        exStr = 'INSERT INTO oesdata VALUES (' + qs[:-2] + ')'
+        exStr = 'INSERT INTO ' + process + ' VALUES (' + qs[:-2] + ')'
         curse.execute(exStr, [tool] + [OESdataDict[zone]['DT']]+[OESdataDict[zone][element] for zone in (fullZoneList) for element in measuredElementList])
         dataBase.commit()
         # opens file to save OES integrated data, but checks if it is open elsewhere first and warns user
