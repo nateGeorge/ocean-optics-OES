@@ -315,11 +315,12 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                 # calculate normalizations
                 if element[-2:] == 'Fi':
                     OESdataDict[zone][element] = (OESdataDict[zone][element[:-3]] / OESdataDict[zone]['Fi'])
-                elif element[-6:] == 'Ar-811':
+                # not doing normalization by argon anymore, you will have to rebuild the database if you want to add this back in
+                '''elif element[-6:] == 'Ar-811':
                     OESdataDict[zone][element] = (OESdataDict[zone][element[:-7]] / OESdataDict[zone]['Ar-811'])
                 elif element[-11:] == '(Fi*Ar-811)':
                     OESdataDict[zone][element] = (OESdataDict[zone][element[:-12]] / (
-                        OESdataDict[zone]['Fi'] * OESdataDict[zone]['Ar-811']))
+                        OESdataDict[zone]['Fi'] * OESdataDict[zone]['Ar-811']))'''
             else:
                 # integrates raw OES spectrum
                 OESdataDict[zone][element] = integrate.simps(rawOESspectrum[OESmaxMins[element+'MIN']:OESmaxMins[element+'MAX']],wl[OESmaxMins[element+'MIN']:OESmaxMins[element+'MAX']])
@@ -352,6 +353,7 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                                     if not os.path.exists(eachPath):
                                         os.mkdir(eachPath)
                                 nsl.backupFiles(savedir,expOESprocPath)
+                                nsl.backupFiles('C:/OESdata/','Y:/Experiment Summaries/MC sputter tools OES/data/raw from tool/')
                                 # close plotting process if it is open
                                 if subprocess.Popen.poll(plottingProc) == None:
                                     subprocess.Popen.terminate(plottingProc)
