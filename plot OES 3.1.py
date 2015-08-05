@@ -148,7 +148,10 @@ def getdata():
                 for zone in zoneList:
                     OESdataDict[zone]['DT'].append(datetime.strptime(row[0],'%m/%d/%y %H:%M:%S %p'))
                     for elCount in range(len(measuredElementList)):
-                        OESdataDict[zone][measuredElementList[elCount]].append(row[1+zoneCount*len(measuredElementList)+elCount])
+                        if row[1+zoneCount*len(measuredElementList)+elCount] == '':
+                            OESdataDict[zone][measuredElementList[elCount]].append(0)
+                        else:
+                            OESdataDict[zone][measuredElementList[elCount]].append(row[1+zoneCount*len(measuredElementList)+elCount])
                     zoneCount += 1
                 if process == 'PC':
                     OESdataDict['oesCu3'].append(row[2+(zoneCount-1)*len(measuredElementList)+elCount])
