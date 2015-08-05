@@ -37,13 +37,16 @@ import pylab as plt
 import matplotlib.dates as mdates
 sys.path.append("Y:/Nate/git/nuvosun-python-lib/")
 import nuvosunlib as nsl
-from pymongo import MongoClient
 
-# connect to mongoDB and get cursor
-MONGODB_HOST = 'localhost'
-MONGODB_PORT = 27017
-DBS_NAME = 'OES_DB'
-connection = MongoClient(MONGODB_HOST, MONGODB_PORT)
+# option for summing Z5-6, Z5A+Z5B
+# enabling will require restructuring the database
+calcSumOfZones = False
+if calcSumOfZones:
+    fullZoneList = zoneList + sumZoneList
+else:
+    fullZoneList = zoneList
+
+# connect to sqlite DB and get cursor
 
 plotOESfile = 'C:/OESdata/plot OES 3.1.py'
 autoBackupfile = 'C:/OESdata/auto backup files, read schedule and start measurements.py'
@@ -87,15 +90,15 @@ if process == 'BE':
     sumZoneList = []
     procIntTime = BEintTime * 1000000 # convert to microseconds
     procNumScans = BEnumScans
-    COLLECTION_NAME = 'BEdata'
-    collection = connection[DBS_NAME][COLLECTION_NAME] 
+    dataBase = sq.connect('C:/OESdata/allBEOESData.db')
+    curse = dataBase.cursor()
 elif process == 'PC':
     zoneList = PCzoneList
     sumZoneList = ['5A + 5B', 'zones 5 + 6']
     procIntTime = PCintTime * 1000000 # convert to microseconds
     procNumScans = PCnumScans
-    COLLECTION_NAME = 'PCdata'
-    collection = connection[DBS_NAME][COLLECTION_NAME] 
+    dataBase = sq.connect('C:/OESdata/allPCOESData.db')
+    curse = dataBase.cursor()
 else:
     eg.msgbox(msg='You must choose either BE or PC. Try running the program again.')
     
@@ -240,9 +243,9 @@ def prepare_for_OES_measurements(savedir, savedate):
 
     # make list of elements and zones measured
     measuredElementList = elementList + normalizationKeys#use this: ['Cu', 'In', 'Ga', 'Ar', 'O2', 'H2'] to restrict list as needed
-    combinedList = [zone + ' ' + element for zone in (zoneList + sumZoneList) for element in measuredElementList] #Combines list like 5A Cu, 5A In, etc...
+    combinedList = [zone + ' ' + element for zone in (fullZoneList) for element in measuredElementList] #Combines list like 5A Cu, 5A In, etc...
     OESdataDict={}
-    for zone in zoneList + sumZoneList:
+    for zone in fullZoneList:
         OESdataDict[zone] = {}
         OESdataDict[zone]['DT'] = ''
         for element in measuredElementList:
@@ -265,6 +268,11 @@ def prepare_for_OES_measurements(savedir, savedate):
                     print zoneList[each] + ' raw spectra file (' + savedir + savedate + ' -- ' + zoneList[each] + ' OES raw spectra.csv' + ') is open another program, please close it'
                     print '*****************\n'
                     time.sleep(5)
+                    
+    # create sqlite DB if not already existing
+    
+    exstr = '(tool TEXT, datetime TEXT, ' + ', '.join(['\"' + e + '\"' + ' REAL' for e in combinedList]) + ')'
+    curse.execute("CREATE TABLE IF NOT EXISTS oesdata " + exstr)
         
     # start OES integrated signals file and save labels on first row (if doesn't already exist)
     if os.path.isfile(savedir + savedate + ' -- OES signals.csv'):
@@ -368,32 +376,32 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                 time.sleep(5)
         
         # if running PC, add zones 5A+5B, and all zones for composition measurements
-        if process == 'PC':
-            if zone == '5B':
-                for element in OESdataDict['5B'].keys():
-                    if element != 'DT':
-                        OESdataDict['5A + 5B'][element] = OESdataDict['5A'][element] + OESdataDict['5B'][element]
-                    OESdataDict['5A + 5B']['DT'] = OESdataDict['5B']['DT']
-            if zone == '6B':
-                for element in OESdataDict['6B'].keys():
-                    if element != 'DT':
-                        OESdataDict['zones 5 + 6'][element] = OESdataDict['5A'][element] + OESdataDict['5B'][element] + OESdataDict['6A'][element] + OESdataDict['6B'][element]
-                    OESdataDict['zones 5 + 6']['DT'] = OESdataDict['6B']['DT']
+        # disabled for now, too complex and unnecessary. Set calcSumOfZones = True to enable, will have to re-create database also
+        if calcSumOfZones:
+            if process == 'PC':
+                if zone == '5B':
+                    for element in OESdataDict['5B'].keys():
+                        if element != 'DT':
+                            OESdataDict['5A + 5B'][element] = OESdataDict['5A'][element] + OESdataDict['5B'][element]
+                        OESdataDict['5A + 5B']['DT'] = OESdataDict['5B']['DT']
+                if zone == '6B':
+                    for element in OESdataDict['6B'].keys():
+                        if element != 'DT':
+                            OESdataDict['zones 5 + 6'][element] = OESdataDict['5A'][element] + OESdataDict['5B'][element] + OESdataDict['6A'][element] + OESdataDict['6B'][element]
+                        OESdataDict['zones 5 + 6']['DT'] = OESdataDict['6B']['DT']
         
-        # save integration data to mongoDB
-        '''qs = '?, '*(len(combinedList) + 2)
+        # save integration data to sqlite database
+        qs = '?, '*(len(combinedList) + 2)
         exStr = 'INSERT INTO oesdata VALUES (' + qs[:-2] + ')'
-        curse.execute(exStr, [tool] + [OESdataDict[zone]['DT']]+[OESdataDict[zone][element] for zone in (zoneList + sumZoneList) for element in measuredElementList])
-        dataBase.commit()'''
-        OESdataDict['tool'] = tool
-        collection.insert(OESdataDict)
+        curse.execute(exStr, [tool] + [OESdataDict[zone]['DT']]+[OESdataDict[zone][element] for zone in (fullZoneList) for element in measuredElementList])
+        dataBase.commit()
         # opens file to save OES integrated data, but checks if it is open elsewhere first and warns user
         notWritten = True
         while notWritten:
             try:    
                 with open(savedir + savedate + ' -- OES signals.csv', 'ab') as csvfile:
                     spamwriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-                    spamwriter.writerow([OESdataDict[zone]['DT']]+[OESdataDict[zone][element] for zone in (zoneList + sumZoneList) for element in measuredElementList])
+                    spamwriter.writerow([OESdataDict[zone]['DT']]+[OESdataDict[zone][element] for zone in (fullZoneList) for element in measuredElementList])
                 notWritten = False
             except IOError:
                 print '\n*****************'
