@@ -250,7 +250,6 @@ def prepare_for_OES_measurements(savedir, savedate):
     # make list of elements and zones measured
     normKeys = []
     for key in normalizationKeys:
-        print key
         if key[-2:] == 'Fi':
             normKeys.append(key)
         # not doing normalization by argon anymore, you will have to rebuild the database if you want to add this back in
