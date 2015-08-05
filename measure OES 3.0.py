@@ -419,9 +419,9 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
         else:
             oesCu3 = ''
         sqlDT = datetime.strptime(OESdataDict[zone]['DT'], '%m/%d/%y %H:%M:%S %p')
-        sqlDT = datetime.strftime(sqlDT, '%Y-%m-%d %H:M:%S')
+        sqlDT = datetime.strftime(sqlDT, '%Y-%m-%d %H:%M:%S')
         print 'sql-formatted dt:',sqlDT
-        dbargs = [] + [OESdataDict[zone][element] for element in measuredElementList] + [oesCu3]
+        dbargs = [sqlDT] + [OESdataDict[zone][element] for element in measuredElementList] + [oesCu3]
         print len(dbargs), len(measuredElementList) + 2
         print exStr
         curse.execute(exStr, [OESdataDict[zone]['DT']] + [OESdataDict[zone][element] for element in measuredElementList] + [oesCu3])
