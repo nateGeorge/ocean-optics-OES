@@ -114,12 +114,12 @@ def create_oesdict():
         elementList = elementDict.keys()
         normKeys = []
         for key in normalizationKeys:
-            if element[-2:] == 'Fi':
+            if key[-2:] == 'Fi':
                 normKeys.append(key)
             # not doing normalization by argon anymore, you will have to rebuild the database if you want to add this back in
-            elif element[-6:] == 'Ar-811' and enableArNormalize:
+            elif key[-6:] == 'Ar-811' and enableArNormalize:
                 normKeys.append(key)
-            elif element[-11:] == '(Fi*Ar-811)' and enableArNormalize:
+            elif key[-11:] == '(Fi*Ar-811)' and enableArNormalize:
                 normKeys.append(key)
         measuredElementList = elementList + normKeys
     else:
@@ -150,9 +150,12 @@ def getdata():
                     for elCount in range(len(measuredElementList)):
                         OESdataDict[zone][measuredElementList[elCount]].append(row[1+zoneCount*len(measuredElementList)+elCount])
                     zoneCount += 1
-                OESdataDict['oesCu3'].append(row[2+zoneCount*len(measuredElementList)+elCount])
+                if process == 'PC':
+                    OESdataDict['oesCu3'].append(row[2+(zoneCount-1)*len(measuredElementList)+elCount])
+                    print thefirstRow[2+(zoneCount-1)*len(measuredElementList)+elCount]
             else: #skips first row which is labels
                 firstRow = False
+                thefirstRow = row
     '''for zone in zoneList:
         OESdataDict[zone]['DT']=np.array(OESdataDict[zone]['DT'])
         for element in measuredElementList:
@@ -180,6 +183,10 @@ def plotdata(*args):
             ax5B = plt.subplot2grid((3, 2), (1,0), axisbg='k')
             ax6A = plt.subplot2grid((3, 2), (0,1), axisbg='k')
             ax6B = plt.subplot2grid((3, 2), (1,1), axisbg='k')
+            ax5AFi = ax5A.twinx()
+            ax5BFi = ax5B.twinx()
+            ax6AFi = ax6A.twinx()
+            ax6BFi = ax6B.twinx()
             axCu3 = plt.subplot2grid((3, 2), (2,0), colspan=2, axisbg='k')
         if process == 'BE':
             ax1B = plt.subplot2grid((2, 2), (0,0), axisbg='k')
