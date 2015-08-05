@@ -288,7 +288,7 @@ def prepare_for_OES_measurements(savedir, savedate):
     # create sqlite DB if not already existing
     
     for theZone in allZones:
-        if theZone == '5A':
+        if theZone == '5B':
             exstr = '(datetime datetime, ' + ', '.join([str(e).replace(" ", "_").replace("-","_").replace("/","_") + ' REAL' for e in measuredElementList]) + ', oesCu3 REAL);'
         else:
             exstr = '(datetime datetime, ' + ', '.join([str(e).replace(" ", "_").replace("-","_").replace("/","_") + ' REAL' for e in measuredElementList]) + ');'
