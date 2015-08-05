@@ -450,7 +450,7 @@ if __name__ == '__main__':
     global plottingProc
     shutOffTimerStarted = False
     timeSinceShutOff = 0
-    processStarted = True
+    processStarted = False
     shutOffStartTime = 0
     multiplexerComPort = MPcomPort
     
