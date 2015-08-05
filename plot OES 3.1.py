@@ -235,6 +235,7 @@ def plotdata(*args):
             axCu3.plot_date(OESdates, OESdataDict['oesCu3'], color = 'yellow')
             axCu3.set_ylabel('Cu3 from OES', color = 'w')
             axCu3.grid(color='w', linewidth=2)
+            axCu3.set_ylim([0.7,0.95])
             plt.figtext(0.6,0.34,'Cu3: ' + str(int(float(OESdataDict['oesCu3'][-1])*1000)/1000.0),fontsize=16,color='white')
             if len(OESdataDict['oesCu3']) > 7:
                 # I'm sure there's an easier way to round, but it's the end of a 16 hour day and I don't care
