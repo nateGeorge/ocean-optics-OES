@@ -173,7 +173,7 @@ def plotdata(*args):
         # plot the data
         if datetime.strptime(savedate,'%m-%d-%y') >= datetime(2015,7,1): # changed to new data storage format on July 1st, 2015
             if process == 'PC':
-                elementsToPlot = {'H-656/Fi' : elementDict['H-656']['color'], 'Cu-325-327/Fi' : elementDict['Cu-325-327']['color'], 'In-451/Fi' : elementDict['In-451']['color'], 'Ga-417/Fi' : elementDict['Ga-417']['color'], 'Na-589/Fi' : elementDict['Na-589']['color']}
+                elementsToPlot = {'H-656/Fi' : elementDict['H-656']['color'], 'Cu-515/Fi' : elementDict['Cu-515']['color'], 'In-451/Fi' : elementDict['In-451']['color'], 'Ga-417/Fi' : elementDict['Ga-417']['color'], 'Na-589/Fi' : elementDict['Na-589']['color']}
             elif process == 'BE':
                 elementsToPlot = {'Mo-380/Fi' : elementDict['Mo-380']['color'], 'Ti-496-522/Fi' : elementDict['Ti-496-522']['color'], 'H-656/Fi' : elementDict['H-656']['color'], 'Na-589/Fi' : elementDict['Na-589']['color']}
         else:
@@ -190,7 +190,7 @@ def plotdata(*args):
             ax5BFi = ax5B.twinx()
             ax6AFi = ax6A.twinx()
             ax6BFi = ax6B.twinx()
-            axCu3 = plt.subplot2grid((3, 2), (2,0), colspan=2, axisbg='k')
+            axCu3 = plt.subplot2grid((3, 2), (2,0), axisbg='k')
         if process == 'BE':
             ax1B = plt.subplot2grid((2, 2), (0,0), axisbg='k')
             ax2B = plt.subplot2grid((2, 2), (1,0), axisbg='k')
@@ -235,12 +235,12 @@ def plotdata(*args):
             axCu3.plot_date(OESdates, OESdataDict['oesCu3'], color = 'yellow')
             axCu3.set_ylabel('Cu3 from OES', color = 'w')
             axCu3.grid(color='w', linewidth=2)
-            plt.figtext(0.6,0.06,'Current OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-1])*1000)/1000),fontsize=12,color='white')
+            plt.figtext(0.75,0.3,'Current OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-1])*1000)/1000.0),fontsize=16,color='white')
             if len(OESdataDict['oesCu3']) > 3:
                 # I'm sure there's an easier way to round, but it's the end of a 16 hour day and I don't care
-                plt.figtext(0.6,0.04,'OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-2])*1000)/1000),fontsize=12,color='white')
-                plt.figtext(0.6,0.02,'OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-3])*1000)/1000),fontsize=12,color='white')
-                plt.figtext(0.6,0,'older OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-4])*1000)/1000),fontsize=12,color='white')
+                plt.figtext(0.75,0.25,'OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-2])*1000)/1000.0),fontsize=16,color='white')
+                plt.figtext(0.75,0.2,'OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-3])*1000)/1000.0),fontsize=16,color='white')
+                plt.figtext(0.75,0.15,'older OES Cu3: ' + str(int(float(OESdataDict['oesCu3'][-4])*1000)/1000.0),fontsize=16,color='white')
         
         eval('ax' + zoneList[0]).set_ylabel('OES integrated intensity', color='w')
         if process == 'BE':
