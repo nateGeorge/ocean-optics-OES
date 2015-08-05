@@ -258,7 +258,6 @@ def prepare_for_OES_measurements(savedir, savedate):
             normKeys.append(key)
         elif key[-11:] == '(Fi*Ar-811)' and enableArNormalize:
             normKeys.append(key)
-    print 'normkeys:',normKeys
     measuredElementList = elementList + normKeys#use this: ['Cu', 'In', 'Ga', 'Ar', 'O2', 'H2'] to restrict list as needed
     combinedList = [zone + ' ' + element for zone in (fullZoneList) for element in measuredElementList] #Combines list like 5A Cu, 5A In, etc...
     OESdataDict={}
@@ -288,9 +287,12 @@ def prepare_for_OES_measurements(savedir, savedate):
                     
     # create sqlite DB if not already existing
     
-    exstr = '(datetime datetime, ' + ', '.join([str(e).replace(" ", "_").replace("-","_").replace("/","_") + ' REAL' for e in measuredElementList]) + ', oesCu3 REAL);'
     for theZone in allZones:
-        curse.execute("CREATE TABLE IF NOT EXISTS " + theZone + " " + exstr)
+        if theZone == '5A':
+            exstr = '(datetime datetime, ' + ', '.join([str(e).replace(" ", "_").replace("-","_").replace("/","_") + ' REAL' for e in measuredElementList]) + ', oesCu3 REAL);'
+        else:
+            exstr = '(datetime datetime, ' + ', '.join([str(e).replace(" ", "_").replace("-","_").replace("/","_") + ' REAL' for e in measuredElementList]) + ');'
+        curse.execute("CREATE TABLE IF NOT EXISTS zone" + theZone + " " + exstr)
         
     # start OES integrated signals file and save labels on first row (if doesn't already exist)
     if os.path.isfile(savedir + savedate + ' -- OES signals.csv'):
@@ -412,17 +414,18 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                         OESdataDict['zones 5 + 6']['DT'] = OESdataDict['6B']['DT']
         
         # save integration data to mysql database
-        qs = ('%s, '*(len(measuredElementList) + 2))[:-2]
-        exStr = 'INSERT INTO ' + zone + ' (datetime, ' + ', '.join([str(e).replace(" ", "_").replace("-","_").replace("/","_") for e in measuredElementList]) + ', oesCu3) VALUES (' + qs + ');'
-        if zone == '5B':
-            oesCu3 = fitCoeffs[0]*OESdataDict[zone]['Cu-515']/OESdataDict[zone]['In-451'] + fitCoeffs[1]
-        else:
-            oesCu3 = ''
         sqlDT = datetime.strptime(OESdataDict[zone]['DT'], '%m/%d/%y %H:%M:%S %p')
         sqlDT = datetime.strftime(sqlDT, '%Y-%m-%d %H:%M:%S')
-        print 'sql-formatted dt:',sqlDT
-        dbargs = [sqlDT] + [OESdataDict[zone][element] for element in measuredElementList] + [oesCu3]
-        print exStr
+        if zone == '5B':
+            oesCu3 = fitCoeffs[0]*OESdataDict[zone]['Cu-515']/OESdataDict[zone]['In-451'] + fitCoeffs[1]
+            qs = ('%s, '*(len(measuredElementList) + 2))[:-2]
+            exStr = 'INSERT INTO zone' + zone + ' (datetime, ' + ', '.join([str(e).replace(" ", "_").replace("-","_").replace("/","_") for e in measuredElementList]) + ', oesCu3) VALUES (' + qs + ');'
+            dbargs = [sqlDT] + [OESdataDict[zone][element] for element in measuredElementList] + [oesCu3]
+        else:
+            oesCu3 = ''
+            qs = ('%s, '*(len(measuredElementList) + 1))[:-2]
+            exStr = 'INSERT INTO zone' + zone + ' (datetime, ' + ', '.join([str(e).replace(" ", "_").replace("-","_").replace("/","_") for e in measuredElementList]) + ') VALUES (' + qs + ');'
+            dbargs = [sqlDT] + [OESdataDict[zone][element] for element in measuredElementList]
         curse.execute(exStr, dbargs)
         conn.commit()
         # opens file to save OES integrated data, but checks if it is open elsewhere first and warns user
