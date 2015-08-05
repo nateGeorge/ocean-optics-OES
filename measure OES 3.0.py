@@ -243,7 +243,6 @@ def prepare_for_OES_measurements(savedir, savedate):
         # gets indices of wavelength and intensity arrays for integration
         OESmaxMins[element+'MIN'], OESmaxMins[element+'MAX'] = get_WL_indices(elementDict[element]['minWL'], elementDict[element]['maxWL'])
 
-
     # make list of elements and zones measured
     normKeys = []
     for key in normalizationKeys:
@@ -284,7 +283,7 @@ def prepare_for_OES_measurements(savedir, savedate):
     # create sqlite DB if not already existing
     
     exstr = '(tool TEXT, datetime TEXT, ' + ', '.join(['\"' + e + '\"' + ' REAL' for e in combinedList]) + ')'
-    curse.execute("CREATE TABLE IF NOT EXISTS oesdata " + exstr)
+    curse.execute("CREATE TABLE IF NOT EXISTS " + process + " " + exstr)
         
     # start OES integrated signals file and save labels on first row (if doesn't already exist)
     if os.path.isfile(savedir + savedate + ' -- OES signals.csv'):
@@ -308,7 +307,7 @@ def prepare_for_OES_measurements(savedir, savedate):
                     notWritten = False
             except IOError:
                 print '\n*****************'
-                print zoneList[each] + ' raw spectra file (' + savedir + savedate + ' -- ' + zoneList[each] + ' OES raw spectra.csv' + ') is open another program, please close it'
+                print zoneList[each] + ' raw spectra file (' + savedir + savedate + ' OES raw spectra.csv' + ') is open another program, please close it'
                 print '*****************\n'
                 time.sleep(5)
     return zoneList, measuredElementList, OESmaxMins, OESdataDict, combinedList
