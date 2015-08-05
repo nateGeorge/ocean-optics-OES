@@ -319,7 +319,6 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
     # measures the OES spectra in each zone, and for each element.  appends the CSV files storing the data.
     for zone in zoneList:
         OESdataDict[zone]['DT'], rawOESspectrum = measure_OES_spectrum(zoneToIndexMap[zone], darkInt)
-        print zone, OESdataDict[zone]['DT']
         for element in measuredElementList:
             if re.search('/', element):
                 # calculate normalizations
@@ -406,15 +405,15 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
         # save integration data to sqlite database
         qs = '?, '*(len(combinedList) + 2)
         exStr = 'INSERT INTO ' + process + ' VALUES (' + qs[:-2] + ')'
-        curse.execute(exStr, [tool] + [OESdataDict[zone]['DT']]+[OESdataDict[zone][element] for zone in (fullZoneList) for element in measuredElementList])
+        curse.execute(exStr, [tool] + [OESdataDict[zone]['DT']]+[OESdataDict[eachzone][element] for eachzone in fullZoneList for element in measuredElementList])
         dataBase.commit()
         # opens file to save OES integrated data, but checks if it is open elsewhere first and warns user
         notWritten = True
         while notWritten:
-            try:    
+            try:
                 with open(savedir + savedate + ' -- OES signals.csv', 'ab') as csvfile:
                     spamwriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-                    spamwriter.writerow([OESdataDict[zone]['DT']]+[OESdataDict[zone][element] for zone in (fullZoneList) for element in measuredElementList])
+                    spamwriter.writerow([OESdataDict[zone]['DT']]+[OESdataDict[eachzone][element] for eachzone in fullZoneList for element in measuredElementList])
                 notWritten = False
             except IOError:
                 print '\n*****************'
