@@ -10,6 +10,9 @@ from datetime import datetime
 sys.path.append("Y:/Nate/git/nuvosun-python-lib/")
 import nuvosunlib as nsl
 
+# option to add in normalization by argon -- need to change in measuring code also
+enableArNormalize = False
+
 #matplotlib.rcParams.update({'font.size': 22})
 #matplotlib.rcParams.update({'savefig.facecolor': 'k'})
 global process
@@ -21,7 +24,7 @@ for file in files:
     if re.search('MC\d\d.txt',file):
         tool = file[:4]
 
-BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort, BEintTime, BEnumScans, PCintTime, PCnumScans = nsl.load_OES_config(tool)
+BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort, BEintTime, BEnumScans, PCintTime, PCnumScans, fitCoeffs = nsl.load_OES_config(tool)
 
 try:
     todaysRun = sys.argv[1]
@@ -109,7 +112,16 @@ def create_oesdict():
         global elementDict
         elementDict, normalizationKeys = nsl.OESparameters(True)
         elementList = elementDict.keys()
-        measuredElementList = elementList + normalizationKeys
+        normKeys = []
+        for key in normalizationKeys:
+            if element[-2:] == 'Fi':
+                normKeys.append(key)
+            # not doing normalization by argon anymore, you will have to rebuild the database if you want to add this back in
+            elif element[-6:] == 'Ar-811' and enableArNormalize:
+                normKeys.append(key)
+            elif element[-11:] == '(Fi*Ar-811)' and enableArNormalize:
+                normKeys.append(key)
+        measuredElementList = elementList + normKeys
     else:
         elementList = ['Cu','In','Ga','Se','Ar','Na','Mo','Ti','O2','H2']
         measuredElementList = elementList #use this: ['Cu', 'In', 'Ga', 'Ar', 'O2', 'H2'] to restrict list as needed

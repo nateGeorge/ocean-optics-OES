@@ -38,7 +38,7 @@ import matplotlib.dates as mdates
 sys.path.append("Y:/Nate/git/nuvosun-python-lib/")
 import nuvosunlib as nsl
 
-# option to add in normalization by argon
+# option to add in normalization by argon -- need to change in plotting code also
 enableArNormalize = False
 
 # connect to sqlite DB and get cursor
@@ -52,7 +52,7 @@ for file in files:
     if re.search('MC\d\d.txt',file):
         tool = file[:4]
 
-BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort, BEintTime, BEnumScans, PCintTime, PCnumScans = nsl.load_OES_config(tool)
+BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort, BEintTime, BEnumScans, PCintTime, PCnumScans, fitCoeffs = nsl.load_OES_config(tool)
 
 try:
     runNum = sys.argv[1]
