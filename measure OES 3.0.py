@@ -422,9 +422,8 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
         sqlDT = datetime.strftime(sqlDT, '%Y-%m-%d %H:%M:%S')
         print 'sql-formatted dt:',sqlDT
         dbargs = [sqlDT] + [OESdataDict[zone][element] for element in measuredElementList] + [oesCu3]
-        print len(dbargs), len(measuredElementList) + 2
         print exStr
-        curse.execute(exStr, [OESdataDict[zone]['DT']] + [OESdataDict[zone][element] for element in measuredElementList] + [oesCu3])
+        curse.execute(exStr, dbargs)
         conn.commit()
         # opens file to save OES integrated data, but checks if it is open elsewhere first and warns user
         notWritten = True
