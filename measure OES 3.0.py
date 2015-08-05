@@ -80,20 +80,19 @@ except:
         if re.search('MC\d\d.txt',file):
             tool = file[:4]
 
+dataBase = sq.connect('C:/OESdata/' + tool + ' OESData.db')
+curse = dataBase.cursor()
+
 if process == 'BE':
     zoneList = BEzoneList
     sumZoneList = []
     procIntTime = BEintTime * 1000000 # convert to microseconds
     procNumScans = BEnumScans
-    dataBase = sq.connect('C:/OESdata/allBEOESData.db')
-    curse = dataBase.cursor()
 elif process == 'PC':
     zoneList = PCzoneList
     sumZoneList = ['5A + 5B', 'zones 5 + 6']
     procIntTime = PCintTime * 1000000 # convert to microseconds
     procNumScans = PCnumScans
-    dataBase = sq.connect('C:/OESdata/allPCOESData.db')
-    curse = dataBase.cursor()
 else:
     eg.msgbox(msg='You must choose either BE or PC. Try running the program again.')
     
@@ -432,7 +431,7 @@ if __name__ == '__main__':
     global plottingProc
     shutOffTimerStarted = False
     timeSinceShutOff = 0
-    processStarted = False
+    processStarted = True
     shutOffStartTime = 0
     multiplexerComPort = MPcomPort
     
