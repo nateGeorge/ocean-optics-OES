@@ -130,6 +130,7 @@ def create_oesdict():
     for zone in zoneList:
         OESdataDict[zone] = {}
         OESdataDict[zone]['DT'] = []
+        OESdataDict['oesCu3'] = []
         for element in measuredElementList:
             OESdataDict[zone][element]= []
             
@@ -149,6 +150,7 @@ def getdata():
                     for elCount in range(len(measuredElementList)):
                         OESdataDict[zone][measuredElementList[elCount]].append(row[1+zoneCount*len(measuredElementList)+elCount])
                     zoneCount += 1
+                OESdataDict['oesCu3'].append(row[2+zoneCount*len(measuredElementList)+elCount])
             else: #skips first row which is labels
                 firstRow = False
     '''for zone in zoneList:
@@ -161,26 +163,6 @@ def getdata():
 def plotdata(*args):
         plt.clf()
         OESdataDict = getdata()
-        Cu3 = {}
-        CuSum = 0
-        InSum = 0
-        GaSum = 0
-        Cu3total = 0
-        for zone in OESdataDict.keys():
-            Cu3[zone] = float(OESdataDict[zone]['Cu-325-327'][-1])/(float(OESdataDict[zone]['In-451'][-1])+float(OESdataDict[zone]['Ga-417'][-1]))
-            
-            CuSum += float(OESdataDict[zone]['Cu-325-327'][-1]) / float(OESdataDict[zone]['Ar-811'][-1])
-            InSum += float(OESdataDict[zone]['In-451'][-1]) / float(OESdataDict[zone]['Ar-811'][-1])
-            GaSum += float(OESdataDict[zone]['Ga-417'][-1]) / float(OESdataDict[zone]['Ar-811'][-1])
-            
-            if zone != '6A': #exclude zone 6A for now cause it's junk
-                Cu3total += Cu3[zone]
-            Cu3[zone] = math.ceil(Cu3[zone]*100)/100.0
-        Cu3total = Cu3total/3 #average from 4 zones
-        Cu3total = math.ceil(Cu3total*100)/100.0
-        Cu3Sumtotal = CuSum / (InSum + GaSum)
-        Cu3Sumtotal = math.ceil(Cu3Sumtotal*100)/100.0
-        Cu3total *=1.446
 
         # plot the data
         if datetime.strptime(savedate,'%m-%d-%y') >= datetime(2015,7,1): # changed to new data storage format on July 1st, 2015
@@ -194,25 +176,16 @@ def plotdata(*args):
             elif process == 'BE':
                 elementsToPlot = {'Ar' : '#b2b2b2', 'Mo' : '#0099ff', 'Ti' : '#ff5c33', 'Na' : '#009933'} # dict of elements and colors for plotting
         if process == 'PC':
-            ax5A = plt.subplot2grid((2, 2), (0,0), axisbg='k')
-            ax5B = plt.subplot2grid((2, 2), (1,0), axisbg='k')
-            ax6A = plt.subplot2grid((2, 2), (0,1), axisbg='k')
-            ax6B = plt.subplot2grid((2, 2), (1,1), axisbg='k')
-            if datetime.strptime(savedate,'%m-%d-%y') >= datetime(2015,7,1):
-                ax5AFi = ax5A.twinx()
-                ax5BFi = ax5B.twinx()
-                ax6AFi = ax6A.twinx()
-                ax6BFi = ax6B.twinx()
+            ax5A = plt.subplot2grid((3, 2), (0,0), axisbg='k')
+            ax5B = plt.subplot2grid((3, 2), (1,0), axisbg='k')
+            ax6A = plt.subplot2grid((3, 2), (0,1), axisbg='k')
+            ax6B = plt.subplot2grid((3, 2), (1,1), axisbg='k')
+            axCu3 = plt.subplot2grid((3, 2), (2,0), colspan=2, axisbg='k')
         if process == 'BE':
             ax1B = plt.subplot2grid((2, 2), (0,0), axisbg='k')
             ax2B = plt.subplot2grid((2, 2), (1,0), axisbg='k')
             ax3B = plt.subplot2grid((2, 2), (0,1), axisbg='k')
             ax4B = plt.subplot2grid((2, 2), (1,1), axisbg='k')
-            if datetime.strptime(savedate,'%m-%d-%y') >= datetime(2015,7,1):
-                ax1BFi = ax1B.twinx()
-                ax2BFi = ax2B.twinx()
-                ax3BFi = ax3B.twinx()
-                ax4BFi = ax4B.twinx()
         
         for zone in zoneList:
             OESdates = matplotlib.dates.date2num(OESdataDict[zone]['DT'])
@@ -224,48 +197,44 @@ def plotdata(*args):
             if process == 'PC':
                 eval('ax' + zone).set_ylim([0,0.15])
             
-            
         
             eval('ax'+zone).xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
             
-            if datetime.strptime(savedate,'%m-%d-%y') >= datetime(2015,7,1):
-                eval('ax' + zone + 'Fi').tick_params(color='w',labelcolor='w')
-                for spine in eval('ax' + zone + 'Fi').spines.values():
-                    spine.set_edgecolor('w')
-                eval('ax'+zone+'Fi').plot_date(OESdates, OESdataDict[zone]['Fi'], color = elementDict['Fi']['color'])
-                eval('ax'+zone+'Fi').plot_date(OESdates, OESdataDict[zone]['Fi'], '--', color = elementDict['Fi']['color'], linewidth = 4, label = 'Fi')
-                if len(zoneList) < 2:
-                    eval('ax' + zoneList[2] + 'Fi').set_ylabel('Full intensity (Fi) of plasma', color='w')
-                else:
-                    eval('ax' + zoneList[0] + 'Fi').set_ylabel('Full intensity (Fi) of plasma', color='w')
+            eval('ax' + zone + 'Fi').tick_params(color='w',labelcolor='w')
+            for spine in eval('ax' + zone + 'Fi').spines.values():
+                spine.set_edgecolor('w')
+            eval('ax'+zone+'Fi').plot_date(OESdates, OESdataDict[zone]['Fi'], color = elementDict['Fi']['color'])
+            eval('ax'+zone+'Fi').plot_date(OESdates, OESdataDict[zone]['Fi'], '--', color = elementDict['Fi']['color'], linewidth = 4, label = 'Fi')
+            if len(zoneList) < 2:
+                eval('ax' + zoneList[2] + 'Fi').set_ylabel('Full intensity (Fi) of plasma', color='w')
+            else:
+                eval('ax' + zoneList[0] + 'Fi').set_ylabel('Full intensity (Fi) of plasma', color='w')
             
             for element in elementsToPlot.keys():
                 eval('ax'+zone).plot_date(OESdates, OESdataDict[zone][element], color = elementsToPlot[element])
                 eval('ax'+zone).plot_date(OESdates, OESdataDict[zone][element], '-', color = elementsToPlot[element], linewidth = 4, label = element)
                 eval('ax'+zone).set_title(zone, color = 'w')
-                eval('ax'+zone).grid(color='w', linewidth=2)
+            eval('ax'+zone).grid(color='w', linewidth=2)
+        
+        # format and plot Cu3 axis
+        axCu3.tick_params(color='w',labelcolor='w')
+        for spine in axCu3.spines.values():
+            spine.set_edgecolor('w')
+        axCu3.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+        axCu3.plot_date(OESdates, OESdataDict['oesCu3'], color = 'yellow')
+        axCu3.set_ylabel('Cu3 from OES', color = 'w')
+        axCu3.grid(color='w', linewidth=2)
         
         eval('ax' + zoneList[0]).set_ylabel('OES integrated intensity', color='w')
-        eval('ax' + zoneList[1]).set_xlabel('time', color='w')
+        if process == 'BE':
+            eval('ax' + zoneList[1]).set_xlabel('time', color='w')
+        elif process == 'PC':
+            axCu3.set_xlabel('time', color='w')
         
         legend = eval('ax' + zoneList[0]).legend(bbox_to_anchor=(0.2, 1.1), loc='upper right', borderaxespad=0., shadow=True, labelspacing=0, numpoints=1)
-        # The frame is matplotlib.patches.Rectangle instance surrounding the legend.
         frame = legend.get_frame()
         frame.set_facecolor('0.90')
-            # Set the fontsize
-        #for label in legend.get_texts():
-        #   label.set_fontsize('25')
-        #ax1.set_ylim([0,60])
-        #ax1.axhline(45,ls='--',color='#ff0000',linewidth=4)
         
-        if process == 'PC':
-            cu3stringlist = [str(zone)+ ':' + str(Cu3[zone]) for zone in sorted(Cu3.keys())]
-            cu3string = ''
-            for each in cu3stringlist:
-                cu3string += each + ' ' 
-            plt.figtext(0.6,0.95,'Cu3: ' + cu3string,fontsize=12,color='white')
-            plt.figtext(0.6,0.92,'overall Cu3: ' + str(Cu3total),fontsize=12,color='white')
-        #plt.title('OES zone ' + zoneToPlot,color='w')
         fig.canvas.set_window_title('OES zones ' + zoneList[0] + ' - ' + zoneList[-1])
         
 fig=plt.figure(facecolor='k')

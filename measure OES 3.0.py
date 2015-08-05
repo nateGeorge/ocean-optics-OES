@@ -25,7 +25,7 @@ Zone    Target  Multiplexer channel
 
 '''
 import ctypes, time, os, csv, matplotlib, subprocess, sys, re
-import sqlite3 as sq
+import MySQLdb
 import pylab as plt
 import easygui as eg
 import seabreeze
@@ -38,10 +38,11 @@ import matplotlib.dates as mdates
 sys.path.append("Y:/Nate/git/nuvosun-python-lib/")
 import nuvosunlib as nsl
 
+# list of all possible zones for making the mysql db
+allZones = ['1B','2B','3B','4B','5A','5B','6A','6B']
+
 # option to add in normalization by argon -- need to change in plotting code also
 enableArNormalize = False
-
-# connect to sqlite DB and get cursor
 
 plotOESfile = 'C:/OESdata/plot OES 3.1.py'
 autoBackupfile = 'C:/OESdata/auto backup files, read schedule and start measurements.py'
@@ -80,9 +81,6 @@ except:
         if re.search('MC\d\d.txt',file):
             tool = file[:4]
 
-dataBase = sq.connect('C:/OESdata/' + tool + ' OESData.db')
-curse = dataBase.cursor()
-
 if process == 'BE':
     zoneList = BEzoneList
     sumZoneList = []
@@ -106,6 +104,14 @@ if calcSumOfZones:
     fullZoneList = zoneList + sumZoneList
 else:
     fullZoneList = zoneList
+ 
+# connect to sql db
+conn = MySQLdb.connect (host = "localhost",
+                        user = "operator",
+                        passwd = "nvs2011",
+                        db = tool + "_OESdata",
+                        port = 3308)
+curse = conn.cursor()
 
 def connect_to_multiplexer(comPort):
     # takes com port as a string, e.g. 'COM1'
@@ -280,8 +286,10 @@ def prepare_for_OES_measurements(savedir, savedate):
                     
     # create sqlite DB if not already existing
     
-    exstr = '(tool TEXT, datetime TEXT, ' + ', '.join(['\"' + e + '\"' + ' REAL' for e in combinedList]) + ')'
-    curse.execute("CREATE TABLE IF NOT EXISTS " + process + " " + exstr)
+    exstr = '(datetime TEXT, ' + ', '.join(['[' + str(e).replace(" ", "_") + ']' + ' REAL(255,3)' for e in combinedList]) + ', oesCu3 REAL()'
+    print exstr
+    for theZone in allZones:
+        curse.execute("CREATE TABLE IF NOT EXISTS " + theZone + " " + exstr)
         
     # start OES integrated signals file and save labels on first row (if doesn't already exist)
     if os.path.isfile(savedir + savedate + ' -- OES signals.csv'):
@@ -301,7 +309,7 @@ def prepare_for_OES_measurements(savedir, savedate):
             try:
                 with open(savedir + savedate + ' -- OES signals.csv', 'wb') as csvfile:
                     spamwriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-                    spamwriter.writerow(['DateTime']+combinedList)
+                    spamwriter.writerow(['DateTime'] + combinedList + ['oesCu3'])
                     notWritten = False
             except IOError:
                 print '\n*****************'
@@ -404,16 +412,20 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
         
         # save integration data to sqlite database
         qs = '?, '*(len(combinedList) + 2)
-        exStr = 'INSERT INTO ' + process + ' VALUES (' + qs[:-2] + ')'
-        curse.execute(exStr, [tool] + [OESdataDict[zone]['DT']]+[OESdataDict[eachzone][element] for eachzone in fullZoneList for element in measuredElementList])
-        dataBase.commit()
+        exStr = 'INSERT INTO ' + zone + ' VALUES (' + qs[:-2] + ')'
+        if zone == '5B':
+            oesCu3 = fitCoeffs[0]*OESdataDict[zone]['Cu-515']/OESdataDict[zone]['In-451'] + fitCoeffs[1]
+        else:
+            oesCu3 = ''
+        curse.execute(exStr, [OESdataDict[zone]['DT']] + [OESdataDict[zone][element] for element in measuredElementList] + [oesCu3])
+        conn.commit()
         # opens file to save OES integrated data, but checks if it is open elsewhere first and warns user
         notWritten = True
         while notWritten:
             try:
                 with open(savedir + savedate + ' -- OES signals.csv', 'ab') as csvfile:
                     spamwriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-                    spamwriter.writerow([OESdataDict[zone]['DT']]+[OESdataDict[eachzone][element] for eachzone in fullZoneList for element in measuredElementList])
+                    spamwriter.writerow([OESdataDict[zone]['DT']]+[OESdataDict[eachzone][element] for eachzone in fullZoneList for element in measuredElementList] + [oesCu3])
                 notWritten = False
             except IOError:
                 print '\n*****************'
