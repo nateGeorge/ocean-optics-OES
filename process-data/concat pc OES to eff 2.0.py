@@ -52,7 +52,10 @@ for run in sorted(PCOESandXRFdataSubs.keys()):
         OESpcDataConcatWithEff[run].setdefault(zone,{})
         for key in PCOESandXRFdataSubs[run][zone].keys():
             if key != 'DW':
-                OESpcDataConcatWithEff[run][zone][key] = nsl.interp_to_eff(np.array(effDataSubs[int(run)]['DW'], dtype='float64'),np.array(PCOESandXRFdataSubs[run][zone]['DW'], dtype='float64'),np.array(PCOESandXRFdataSubs[run][zone][key], dtype='float64'))
+                try:
+                    OESpcDataConcatWithEff[run][zone][key] = nsl.interp_to_eff(np.array(effDataSubs[int(run)]['DW'], dtype='float64'),np.array(PCOESandXRFdataSubs[run][zone]['DW'], dtype='float64'),np.array(PCOESandXRFdataSubs[run][zone][key], dtype='float64'))
+                except:
+                    pass
             '''try:
                 OESpcDataConcatWithEff[run][zone][key] = nsl.interp_to_eff(np.array(effDataSubs[int(run)]['DW'], dtype='float64'),np.array(PCOESandXRFdataSubs[run][zone]['DW'], dtype='float64'),np.array(PCOESandXRFdataSubs[run][zone][key], dtype='float64'))
             except Exception as e:
