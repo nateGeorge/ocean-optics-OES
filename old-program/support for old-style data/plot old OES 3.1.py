@@ -10,9 +10,6 @@ from datetime import datetime
 sys.path.append("Y:/Nate/git/nuvosun-python-lib/")
 import nuvosunlib as nsl
 
-# option to add in normalization by argon -- need to change in measuring code also
-enableArNormalize = False
-
 #matplotlib.rcParams.update({'font.size': 22})
 #matplotlib.rcParams.update({'savefig.facecolor': 'k'})
 global process
@@ -112,16 +109,7 @@ def create_oesdict():
         global elementDict
         elementDict, normalizationKeys = nsl.OESparameters(True)
         elementList = elementDict.keys()
-        normKeys = []
-        for key in normalizationKeys:
-            if element[-2:] == 'Fi':
-                normKeys.append(key)
-            # not doing normalization by argon anymore, you will have to rebuild the database if you want to add this back in
-            elif element[-6:] == 'Ar-811' and enableArNormalize:
-                normKeys.append(key)
-            elif element[-11:] == '(Fi*Ar-811)' and enableArNormalize:
-                normKeys.append(key)
-        measuredElementList = elementList + normKeys
+        measuredElementList = elementList + normalizationKeys
     else:
         elementList = ['Cu','In','Ga','Se','Ar','Na','Mo','Ti','O2','H2']
         measuredElementList = elementList #use this: ['Cu', 'In', 'Ga', 'Ar', 'O2', 'H2'] to restrict list as needed
@@ -130,7 +118,6 @@ def create_oesdict():
     for zone in zoneList:
         OESdataDict[zone] = {}
         OESdataDict[zone]['DT'] = []
-        OESdataDict['oesCu3'] = []
         for element in measuredElementList:
             OESdataDict[zone][element]= []
             
@@ -150,7 +137,6 @@ def getdata():
                     for elCount in range(len(measuredElementList)):
                         OESdataDict[zone][measuredElementList[elCount]].append(row[1+zoneCount*len(measuredElementList)+elCount])
                     zoneCount += 1
-                OESdataDict['oesCu3'].append(row[2+zoneCount*len(measuredElementList)+elCount])
             else: #skips first row which is labels
                 firstRow = False
     '''for zone in zoneList:
@@ -163,6 +149,26 @@ def getdata():
 def plotdata(*args):
         plt.clf()
         OESdataDict = getdata()
+        Cu3 = {}
+        CuSum = 0
+        InSum = 0
+        GaSum = 0
+        Cu3total = 0
+        for zone in OESdataDict.keys():
+            Cu3[zone] = float(OESdataDict[zone]['Cu-325-327'][-1])/(float(OESdataDict[zone]['In-451'][-1])+float(OESdataDict[zone]['Ga-417'][-1]))
+            
+            CuSum += float(OESdataDict[zone]['Cu-325-327'][-1]) / float(OESdataDict[zone]['Ar-811'][-1])
+            InSum += float(OESdataDict[zone]['In-451'][-1]) / float(OESdataDict[zone]['Ar-811'][-1])
+            GaSum += float(OESdataDict[zone]['Ga-417'][-1]) / float(OESdataDict[zone]['Ar-811'][-1])
+            
+            if zone != '6A': #exclude zone 6A for now cause it's junk
+                Cu3total += Cu3[zone]
+            Cu3[zone] = math.ceil(Cu3[zone]*100)/100.0
+        Cu3total = Cu3total/3 #average from 4 zones
+        Cu3total = math.ceil(Cu3total*100)/100.0
+        Cu3Sumtotal = CuSum / (InSum + GaSum)
+        Cu3Sumtotal = math.ceil(Cu3Sumtotal*100)/100.0
+        Cu3total *=1.446
 
         # plot the data
         if datetime.strptime(savedate,'%m-%d-%y') >= datetime(2015,7,1): # changed to new data storage format on July 1st, 2015
@@ -231,9 +237,23 @@ def plotdata(*args):
         eval('ax' + zoneList[1]).set_xlabel('time', color='w')
         
         legend = eval('ax' + zoneList[0]).legend(bbox_to_anchor=(0.2, 1.1), loc='upper right', borderaxespad=0., shadow=True, labelspacing=0, numpoints=1)
+        # The frame is matplotlib.patches.Rectangle instance surrounding the legend.
         frame = legend.get_frame()
         frame.set_facecolor('0.90')
+            # Set the fontsize
+        #for label in legend.get_texts():
+        #   label.set_fontsize('25')
+        #ax1.set_ylim([0,60])
+        #ax1.axhline(45,ls='--',color='#ff0000',linewidth=4)
         
+        if process == 'PC':
+            cu3stringlist = [str(zone)+ ':' + str(Cu3[zone]) for zone in sorted(Cu3.keys())]
+            cu3string = ''
+            for each in cu3stringlist:
+                cu3string += each + ' ' 
+            plt.figtext(0.6,0.95,'Cu3: ' + cu3string,fontsize=12,color='white')
+            plt.figtext(0.6,0.92,'overall Cu3: ' + str(Cu3total),fontsize=12,color='white')
+        #plt.title('OES zone ' + zoneToPlot,color='w')
         fig.canvas.set_window_title('OES zones ' + zoneList[0] + ' - ' + zoneList[-1])
         
 fig=plt.figure(facecolor='k')
