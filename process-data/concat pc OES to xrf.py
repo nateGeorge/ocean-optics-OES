@@ -9,8 +9,8 @@ from scipy import integrate
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 
-processedPCfile = 'Y:/Nate/OES/databases/PROCESSED all OES data PC - with normalizations.csv'
-processedBEfile = 'Y:/Nate/OES/databases/PROCESSED all OES data BE - with normalizations.csv'
+processedPCfile = 'Y:/Experiment Summaries/MC sputter tools OES/data/databases/PROCESSED all OES data PC - with normalizations.csv'
+processedBEfile = 'Y:/Experiment Summaries/MC sputter tools OES/data/databases/PROCESSED all OES data BE - with normalizations.csv'
 
 processedPCUpToDate, processedBEUpToDate, writtenPCruns, writtenBEruns, OESDTDW = nsl.get_saved_runsInprocessedOESDBList()
 

@@ -8,8 +8,8 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 upToDate, OESmtime, runsInDB, runDatesInDB = nsl.get_saved_runsInOESDBList()
 
-processedPCfile = 'Y:/Nate/OES/databases/PROCESSED all OES data PC - with normalizations.csv'
-effFile = 'Y:/Nate/OES/databases/OES-XRF-eff-data.csv'
+processedPCfile = 'Y:/Experiment Summaries/MC sputter tools OES/data/databases/PROCESSED all OES data PC - with normalizations.csv'
+effFile = 'Y:/Experiment Summaries/MC sputter tools OES/data/databases/OES-XRF-eff-data.csv'
 
 effDataTypes = ['Cell Eff Avg',
         'Cell Voc Avg','Cell Jsc Avg','Cell FF Avg','Cell Rs Avg','Cell Rsh Avg']

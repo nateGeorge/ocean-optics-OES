@@ -90,8 +90,8 @@ startTime = time.time()
 
 useLogFile = True # will write everything to the logfile instead of to console
 
-basePath = 'Y:/Nate/OES/databases/'
-recordBasePath = 'Y:/Nate/OES/records/'
+basePath = 'Y:/Experiment Summaries/MC sputter tools OES/data/databases/'
+recordBasePath = 'Y:/Experiment Summaries/MC sputter tools OES/data/records/'
 OESdbFile = basePath + 'all OES data.csv'
 runsInDBFile = recordBasePath + 'runsInDB.pkl'
 latestModDateFile = recordBasePath + 'DBlatestMod.pkl'
