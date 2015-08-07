@@ -372,7 +372,7 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                                 expRunPath = expBasepath + '/' + 'S' + str(runNum).zfill(5) + '/'
                                 expOESPath = expRunPath + tool + ' OES data' + '/'
                                 expOESprocPath = expOESPath + process
-                                for eachPath in [expBasepath,expRunPath,expOESpath,expOESprocPath]:
+                                for eachPath in [expBasepath,expRunPath,expOESPath,expOESprocPath]:
                                     if not os.path.exists(eachPath):
                                         os.mkdir(eachPath)
                                 nsl.backupFiles(savedir,expOESprocPath)
