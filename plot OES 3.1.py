@@ -9,12 +9,20 @@ from matplotlib.widgets import Button
 from datetime import datetime
 sys.path.append("Y:/Nate/git/nuvosun-python-lib/")
 import nuvosunlib as nsl
+import MySQLdb
 
 # option to add in normalization by argon -- need to change in measuring code also
 enableArNormalize = False
 
-#matplotlib.rcParams.update({'font.size': 22})
-#matplotlib.rcParams.update({'savefig.facecolor': 'k'})
+loadFromMySql = True
+if loadFromMySql:
+    # connect to sql db
+    conn = MySQLdb.connect (host = "localhost",
+                            user = "operator",
+                            passwd = "nvs2011",
+                            db = tool + "_OESdata",
+                            port = 3308)
+    curse = conn.cursor()
 global process
 global dataFile
 global elementDict
@@ -136,28 +144,31 @@ def create_oesdict():
     return OESdataDict,zoneList,measuredElementList
 
 def getdata():
-    global dataFile
-    OESdataDict,zoneList,measuredElementList=create_oesdict()
-    with open(dataFile, 'rb') as csvfile:
-        spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
-        firstRow = True
-        for row in spamreader:
-            if not firstRow and row[-1]!='':
-                zoneCount = 0
-                for zone in zoneList:
-                    OESdataDict[zone]['DT'].append(datetime.strptime(row[0],'%m/%d/%y %H:%M:%S %p'))
-                    for elCount in range(len(measuredElementList)):
-                        if row[1+zoneCount*len(measuredElementList)+elCount] == '':
-                            OESdataDict[zone][measuredElementList[elCount]].append(0)
-                        else:
-                            OESdataDict[zone][measuredElementList[elCount]].append(row[1+zoneCount*len(measuredElementList)+elCount])
-                    zoneCount += 1
-                if process == 'PC':
-                    OESdataDict['oesCu3'].append(row[2+(zoneCount-1)*len(measuredElementList)+elCount])
-                    print thefirstRow[2+(zoneCount-1)*len(measuredElementList)+elCount]
-            else: #skips first row which is labels
-                firstRow = False
-                thefirstRow = row
+    if loadFromMySql:
+        
+    else:
+        global dataFile
+        OESdataDict,zoneList,measuredElementList=create_oesdict()
+        with open(dataFile, 'rb') as csvfile:
+            spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
+            firstRow = True
+            for row in spamreader:
+                if not firstRow and row[-1]!='':
+                    zoneCount = 0
+                    for zone in zoneList:
+                        OESdataDict[zone]['DT'].append(datetime.strptime(row[0],'%m/%d/%y %H:%M:%S %p'))
+                        for elCount in range(len(measuredElementList)):
+                            if row[1+zoneCount*len(measuredElementList)+elCount] == '':
+                                OESdataDict[zone][measuredElementList[elCount]].append(0)
+                            else:
+                                OESdataDict[zone][measuredElementList[elCount]].append(row[1+zoneCount*len(measuredElementList)+elCount])
+                        zoneCount += 1
+                    if process == 'PC':
+                        OESdataDict['oesCu3'].append(row[2+(zoneCount-1)*len(measuredElementList)+elCount])
+                        print thefirstRow[2+(zoneCount-1)*len(measuredElementList)+elCount]
+                else: #skips first row which is labels
+                    firstRow = False
+                    thefirstRow = row
     return OESdataDict
                 
 def plotdata(*args):
