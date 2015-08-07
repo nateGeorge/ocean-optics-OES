@@ -77,7 +77,7 @@ if not todaysRun:
                     process = 'PC'
 else:
     dataFile = savedir + savedate + ' -- OES signals.csv' 
-    
+
 def handle_close(evt):
     if runNum != None:
         basepath = 'Y:\\Experiment Summaries\\Year ' + str(datetime.now().year)
@@ -99,8 +99,7 @@ def handle_close(evt):
         saveFile = savedir + '/' + savedir[-8:] + ' ' + process + '.png'
     print 'saving at:',saveFile
     fig.savefig(saveFile, facecolor = fig.get_facecolor(), edgecolor='none', bbox_inches = 'tight')
-        
- 
+
 def create_oesdict():
     #make list of elements and zones measured
     global zoneList
@@ -159,11 +158,6 @@ def getdata():
             else: #skips first row which is labels
                 firstRow = False
                 thefirstRow = row
-    '''for zone in zoneList:
-        OESdataDict[zone]['DT']=np.array(OESdataDict[zone]['DT'])
-        for element in measuredElementList:
-            OESdataDict[zone][element]=np.array(OESdataDict[zone][element],dtype='float64')'''
-
     return OESdataDict
                 
 def plotdata(*args):
@@ -192,10 +186,20 @@ def plotdata(*args):
             ax6BFi = ax6B.twinx()
             axCu3 = plt.subplot2grid((3, 2), (2,0), axisbg='k')
         if process == 'BE':
-            ax1B = plt.subplot2grid((2, 2), (0,0), axisbg='k')
-            ax2B = plt.subplot2grid((2, 2), (1,0), axisbg='k')
-            ax3B = plt.subplot2grid((2, 2), (0,1), axisbg='k')
-            ax4B = plt.subplot2grid((2, 2), (1,1), axisbg='k')
+            if len(zoneList)>2:
+                ax1B = plt.subplot2grid((2, 2), (0,0), axisbg='k')
+                ax2B = plt.subplot2grid((2, 2), (1,0), axisbg='k')
+                ax3B = plt.subplot2grid((2, 2), (0,1), axisbg='k')
+                ax4B = plt.subplot2grid((2, 2), (1,1), axisbg='k')
+                ax1BFi = ax1B.twinx()
+                ax2BFi = ax2B.twinx()
+                ax3BFi = ax3B.twinx()
+                ax4BFi = ax4B.twinx()
+            else:
+                ax1B = plt.subplot2grid((2, 1), (0,0), axisbg='k')
+                ax2B = plt.subplot2grid((2, 1), (1,0), axisbg='k')
+                ax1BFi = ax1B.twinx()
+                ax2BFi = ax2B.twinx()
         
         for zone in zoneList:
             OESdates = matplotlib.dates.date2num(OESdataDict[zone]['DT'])
