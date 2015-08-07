@@ -14,15 +14,6 @@ import MySQLdb
 # option to add in normalization by argon -- need to change in measuring code also
 enableArNormalize = False
 
-loadFromMySql = True
-if loadFromMySql:
-    # connect to sql db
-    conn = MySQLdb.connect (host = "localhost",
-                            user = "operator",
-                            passwd = "nvs2011",
-                            db = tool + "_OESdata",
-                            port = 3308)
-    curse = conn.cursor()
 global process
 global dataFile
 global elementDict
@@ -32,6 +23,16 @@ for file in files:
     if re.search('MC\d\d.txt',file):
         tool = file[:4]
 
+loadFromMySql = True
+if loadFromMySql:
+    # connect to sql db
+    conn = MySQLdb.connect (host = "localhost",
+                            user = "operator",
+                            passwd = "nvs2011",
+                            db = tool + "_OESdata",
+                            port = 3308)
+    curse = conn.cursor()
+    
 BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort, BEintTime, BEnumScans, PCintTime, PCnumScans, fitCoeffs = nsl.load_OES_config(tool)
 
 try:
@@ -144,11 +145,21 @@ def create_oesdict():
     return OESdataDict,zoneList,measuredElementList
 
 def getdata():
+    OESdataDict,zoneList,measuredElementList=create_oesdict()
     if loadFromMySql:
-        
+        for zone in zoneList:
+            exStr = 'select * from zone' + zone + ' where date(datetime) = curdate()'
+            curse.execute(exStr)
+            sqlData = curse.fetchall()
+            for each in sqlData:
+                OESdataDict[zone]['DT'].append(each[0])
+                for elCount in range(len(measuredElementList)):
+                    if each[1+elCount] == '':
+                        OESdataDict[zone][measuredElementList[elCount]].append(0)
+                    else:
+                        OESdataDict[zone][measuredElementList[elCount]].append(each[1+elCount])
     else:
         global dataFile
-        OESdataDict,zoneList,measuredElementList=create_oesdict()
         with open(dataFile, 'rb') as csvfile:
             spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
             firstRow = True
