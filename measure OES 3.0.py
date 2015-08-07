@@ -311,7 +311,10 @@ def prepare_for_OES_measurements(savedir, savedate):
             try:
                 with open(savedir + savedate + ' -- OES signals.csv', 'wb') as csvfile:
                     spamwriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-                    spamwriter.writerow(['DateTime'] + combinedList + ['oesCu3'])
+                    if process == 'BE':
+                        spamwriter.writerow(['DateTime'] + combinedList)
+                    elif process == 'PC':
+                        spamwriter.writerow(['DateTime'] + combinedList + ['oesCu3'])
                     notWritten = False
             except IOError:
                 print '\n*****************'
@@ -421,7 +424,6 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
             exStr = 'INSERT INTO zone' + zone + ' (datetime, ' + ', '.join([str(e).replace(" ", "_").replace("-","_").replace("/","_") for e in measuredElementList]) + ', oesCu3) VALUES (' + qs + ');'
             dbargs = [sqlDT] + [OESdataDict[zone][element] for element in measuredElementList] + [oesCu3]
         else:
-            oesCu3 = ''
             qs = ('%s, '*(len(measuredElementList) + 1))[:-2]
             exStr = 'INSERT INTO zone' + zone + ' (datetime, ' + ', '.join([str(e).replace(" ", "_").replace("-","_").replace("/","_") for e in measuredElementList]) + ') VALUES (' + qs + ');'
             dbargs = [sqlDT] + [OESdataDict[zone][element] for element in measuredElementList]
@@ -433,7 +435,10 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
             try:
                 with open(savedir + savedate + ' -- OES signals.csv', 'ab') as csvfile:
                     spamwriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-                    spamwriter.writerow([OESdataDict[zone]['DT']]+[OESdataDict[eachzone][element] for eachzone in fullZoneList for element in measuredElementList] + [oesCu3])
+                    if process == 'BE':
+                        spamwriter.writerow([OESdataDict[zone]['DT']]+[OESdataDict[eachzone][element] for eachzone in fullZoneList for element in measuredElementList])
+                    elif process == 'PC':
+                        spamwriter.writerow([OESdataDict[zone]['DT']]+[OESdataDict[eachzone][element] for eachzone in fullZoneList for element in measuredElementList] + [oesCu3])
                 notWritten = False
             except IOError:
                 print '\n*****************'
