@@ -79,10 +79,9 @@ def initialize_OES_dicts():
 # sys.stdout = open('OES processessing log file.txt','wb')
 # sys.stderr = open('OES processessing err file.txt','wb')
 
-processedBEfile = 'Y:/Nate/OES/databases/PROCESSED all OES data BE - with normalizations.csv'
-processedPCfile = 'Y:/Nate/OES/databases/PROCESSED all OES data PC - with normalizations.csv'
-basePath = 'Y:/Nate/OES/databases/'
-OESdbFile = basePath + 'all OES data.csv'
+processedBEfile = 'Y:/Experiment Summaries/MC sputter tools OES/data/databases/PROCESSED all OES data BE - with normalizations.csv'
+processedPCfile = 'Y:/Experiment Summaries/MC sputter tools OES/data/databases/PROCESSED all OES data PC - with normalizations.csv'
+OESdbFile = 'Y:/Experiment Summaries/MC sputter tools OES/data/databases/all OES data.csv'
 
 processedPCUpToDate, processedBEUpToDate, writtenPCruns, writtenBEruns, oldOESDTDW = nsl.get_saved_runsInprocessedOESDBList()
 
@@ -156,6 +155,7 @@ for row in OESreader:
                 if row[2] == 'PC':
                     if currentRunNumber in writtenPCruns:
                         print 'skipping run', currentRunNumber, 'cause already in processed file'
+                        lastRun = currentRunNumber
                         continue
                     print 'adding', currentRunNumber, 'to PC runs'
                     PCruns[currentRunNumber] = {}
@@ -176,6 +176,8 @@ for row in OESreader:
                 initialize_OES_dicts()
                 if row[2] == 'BE':
                     if currentRunNumber in writtenBEruns:
+                        print 'skipping run', currentRunNumber, 'cause already in processed file'
+                        lastRun = currentRunNumber
                         continue
                     print 'adding', currentRunNumber, 'to BE runs'
                     BEruns[currentRunNumber] = {}
