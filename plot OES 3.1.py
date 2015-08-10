@@ -154,10 +154,12 @@ def getdata():
             for each in sqlData:
                 OESdataDict[zone]['DT'].append(each[0])
                 for elCount in range(len(measuredElementList)):
-                    if each[1+elCount] == '':
+                    if each[1 + elCount] == '':
                         OESdataDict[zone][measuredElementList[elCount]].append(0)
                     else:
-                        OESdataDict[zone][measuredElementList[elCount]].append(each[1+elCount])
+                        OESdataDict[zone][measuredElementList[elCount]].append(each[1 + elCount])
+                if zone == '5B':
+                    OESdataDict['oesCu3'].append(each[1 + elCount + 1])
     else:
         global dataFile
         with open(dataFile, 'rb') as csvfile:
@@ -176,7 +178,6 @@ def getdata():
                         zoneCount += 1
                     if process == 'PC':
                         OESdataDict['oesCu3'].append(row[2+(zoneCount-1)*len(measuredElementList)+elCount])
-                        print thefirstRow[2+(zoneCount-1)*len(measuredElementList)+elCount]
                 else: #skips first row which is labels
                     firstRow = False
                     thefirstRow = row
