@@ -129,7 +129,7 @@ def check_for_plasma(OESchannel,darkChannel,numberOfScans=15):
         # this will make sure all zones have been off through one measuring cycle before resetting the 
         # plasma detection timer
         arOffCount += 1
-        if arOffCount >= 4:
+        if arOffCount >= 6:
             arOnCount = 0
             arOffCount = 0
     
