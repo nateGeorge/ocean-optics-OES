@@ -291,7 +291,7 @@ def plotdata(*args):
 fig=plt.figure(facecolor='k')
 fig.canvas.mpl_connect('close_event', handle_close)
 try:
-    print 'using qt4agg backend'
+    #print 'using qt4agg backend'
     figManager = plt.get_current_fig_manager()
     figManager.window.showMaximized()
 except AttributeError:
