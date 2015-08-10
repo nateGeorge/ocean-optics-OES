@@ -328,6 +328,7 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
     global shutOffStartTime
     global shutOffTimerStarted
     global timeSinceShutOff
+    global oesCu3
     
     # measures the OES spectra in each zone, and for each element.  appends the CSV files storing the data.
     for zone in zoneList:
@@ -453,6 +454,8 @@ if __name__ == '__main__':
     global shutOffTimerStarted
     global timeSinceShutOff
     global plottingProc
+    global oesCu3
+    oesCu3 = 0.84
     shutOffTimerStarted = False
     timeSinceShutOff = 0
     processStarted = False
