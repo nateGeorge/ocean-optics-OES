@@ -54,6 +54,7 @@ for file in files:
         tool = file[:4]
 
 BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort, BEintTime, BEnumScans, PCintTime, PCnumScans, fitCoeffs = nsl.load_OES_config(tool)
+print 'fit coeffs:',fitCoeffs
 
 try:
     runNum = sys.argv[1]
@@ -372,7 +373,7 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                                 expBasepath = 'Y:/Experiment Summaries/Year ' + str(datetime.now().year) + '/'
                                 expRunPath = expBasepath + '/' + 'S' + str(runNum).zfill(5) + '/'
                                 expOESPath = expRunPath + tool + ' OES data' + '/'
-                                expOESprocPath = expOESPath + process
+                                expOESprocPath = expOESPath + '/' + process
                                 for eachPath in [expBasepath,expRunPath,expOESPath,expOESprocPath]:
                                     if not os.path.exists(eachPath):
                                         os.mkdir(eachPath)
@@ -383,7 +384,7 @@ def measure_allZones_OES(wl, zoneList, measuredElementList, OESmaxMins, savedir,
                                     subprocess.Popen.terminate(plottingProc)
                                 subprocess.Popen(['python',autoBackupfile,'False'])
                                 mpdll.MPM_CloseConnection()
-                                dataBase.close()
+                                conn.close()
                                 raw_input('press enter to exit')
                                 exit()
                         

@@ -17,13 +17,15 @@ enableArNormalize = False
 global process
 global dataFile
 global elementDict
+global runNum
 
 files = os.listdir('C:/OESdata')
 for file in files:
     if re.search('MC\d\d.txt',file):
         tool = file[:4]
 
-loadFromMySql = True
+
+loadFromMySql = False
 if loadFromMySql:
     # connect to sql db
     conn = MySQLdb.connect (host = "localhost",
@@ -46,7 +48,6 @@ except:
         
 savedate = datetime.strftime(datetime.now(),'%m-%d-%y') #made DT format similar to data system format
 savedir = 'C:/OESdata/' + process + ' ' + savedate + '/'
-onLocal = True
 runToday = False
 folders = os.listdir('C:/OESdata/')
 for folder in folders:
@@ -63,12 +64,16 @@ if todaysRun == False and runToday:
     todaysRun = eg.ccbox(msg, title, choices = ('yes','choose another run'))
 
 if not todaysRun:
-    onLocal = False
     if not os.path.isdir('C:/OESdata/'):
         default = 'Y:/Nate/new MC02 OES program/backup from MC02 computer/data'
     else:
         default = 'C:/OESdata/'
     savedir = eg.diropenbox(msg = 'choose a directory to load data from', title = 'load OES data', default = default)
+    try:
+        runNum = savedir[-5:].strip('0')
+    except Exception as e:
+        print 'could\'t get run number from save directory'
+        print e
     for f in glob.iglob(savedir + '\\' + '*.csv'):
         if re.search('OES signals', f):
             dataFile = f
@@ -102,10 +107,7 @@ def handle_close(evt):
             saveFile2 = runPath + '\\' + str(runNum) + ' ' + process + ' OES.png'
         print 'saving at', saveFile2
         fig.savefig(saveFile2, facecolor = fig.get_facecolor(), edgecolor='none', bbox_inches = 'tight')
-    if onLocal:
-        saveFile = savedir + savedir[-8:-1] + ' ' + process + '.png'
-    else:
-        saveFile = savedir + '/' + savedir[-8:] + ' ' + process + '.png'
+    saveFile = savedir + '/' + savedir[-5:].strip('0') + ' ' + process + '.png'
     print 'saving at:',saveFile
     fig.savefig(saveFile, facecolor = fig.get_facecolor(), edgecolor='none', bbox_inches = 'tight')
 
@@ -160,6 +162,7 @@ def getdata():
                         OESdataDict[zone][measuredElementList[elCount]].append(each[1 + elCount])
                 if zone == '5B':
                     OESdataDict['oesCu3'].append(each[1 + elCount + 1])
+        conn.commit()
     else:
         global dataFile
         with open(dataFile, 'rb') as csvfile:
@@ -226,6 +229,8 @@ def plotdata(*args):
         
         for zone in zoneList:
             OESdates = matplotlib.dates.date2num(OESdataDict[zone]['DT'])
+            if zone == '5B':
+                OES5Bdates = matplotlib.dates.date2num(OESdataDict[zone]['DT'])
         
             # changes ticks and axes to white color
             eval('ax' + zone).tick_params(color='w',labelcolor='w')
@@ -259,7 +264,7 @@ def plotdata(*args):
             for spine in axCu3.spines.values():
                 spine.set_edgecolor('w')
             axCu3.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
-            axCu3.plot_date(OESdates, OESdataDict['oesCu3'], color = 'yellow')
+            axCu3.plot_date(OES5Bdates, OESdataDict['oesCu3'], color = 'yellow')
             axCu3.set_ylabel('Cu3 from OES', color = 'w')
             axCu3.grid(color='w', linewidth=2)
             axCu3.set_ylim([0.7,0.95])
